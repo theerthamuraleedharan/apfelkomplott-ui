@@ -1,0 +1,44 @@
+.apple {
+  font-size: 24px;
+  display: inline-block;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+/* Harvest → crate */
+.apple-in_crate {
+  animation: dropToCrate 0.6s ease-out;
+}
+
+/* Crate → sales */
+.apple-in_sales_stand {
+  animation: moveToSales 0.6s ease-out;
+}
+
+/* Sold */
+.apple-sold {
+  opacity: 0;
+  transform: scale(0.3);
+}
+
+/* Animations */
+@keyframes dropToCrate {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes moveToSales {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

@@ -3,7 +3,6 @@
   border: 10px solid black;
 }
 
-
 .board {
   background: #e7f1d6;
   padding: 20px;
@@ -63,4 +62,22 @@
 .empty {
   opacity: 0.5;
   font-style: italic;
+}
+
+.zone.active {
+  outline: 3px solid #4caf50;
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+}
+
+.round.active {
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.apple-north {
+  color: #ff4d4d;
 }

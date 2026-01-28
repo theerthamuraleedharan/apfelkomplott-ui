@@ -1,0 +1,19 @@
+.scoreboard {
+  background: #ffffff;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  width: 200px;
+}
+
+.money.flash {
+  animation: pop 0.4s ease;
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

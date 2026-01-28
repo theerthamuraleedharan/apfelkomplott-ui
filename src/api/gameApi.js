@@ -33,3 +33,11 @@ export async function buyProductionCard(cardName) {
     body: JSON.stringify({ cardName })
   });
 }
+
+export async function buyInvestment(type) {
+  await fetch("http://localhost:8080/game/invest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ investmentType: type }),
+  });
+}

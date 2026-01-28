@@ -1,0 +1,27 @@
+.transport {
+  background: #f1f8e9;
+}
+
+.crate-list {
+  display: flex;
+  gap: 12px;
+}
+
+.crate {
+  border: 2px solid #6d4c41;
+  border-radius: 6px;
+  padding: 8px;
+  width: 80px;
+  text-align: center;
+  background: #fff3e0;
+}
+
+.crate-content {
+  min-height: 30px;
+  margin-top: 4px;
+}
+
+.empty {
+  color: #999;
+  font-size: 12px;
+}
