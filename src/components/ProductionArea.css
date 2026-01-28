@@ -1,0 +1,122 @@
+.production {
+  margin-top: 24px;
+}
+
+.production-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.field {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.mature-label {
+  margin-left: 4px;
+}
+
+.field-content {
+  min-height: 40px;
+}
+
+.tree {
+  font-size: 24px;
+}
+
+.tree.mature {
+  color: green;
+}
+
+.tree.young {
+  opacity: 0.6;
+}
+
+.empty {
+  font-size: 12px;
+  color: #999;
+}
+
+.zone.production {
+  margin-top: 24px;
+}
+
+.production-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.field {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  padding: 10px;
+  min-height: 90px;
+  text-align: center;
+  position: relative;
+}
+
+.field-label {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.mature-label {
+  margin-left: 4px;
+}
+
+.field-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+}
+
+/* 🌳 TREE ICON */
+.tree {
+  font-size: 26px;
+  transition:
+    transform 0.6s ease,
+    opacity 0.6s ease;
+}
+
+/* Young tree */
+.tree.young {
+  opacity: 0.6;
+}
+
+/* Mature tree highlight */
+.tree.mature {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(0, 160, 0, 0.6));
+  transform: scale(1.1);
+}
+
+.empty {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.tree {
+  animation: popIn 0.4s ease;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
