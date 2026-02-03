@@ -81,3 +81,17 @@
 .apple-north {
   color: #ff4d4d;
 }
+
+.event-popup {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  background: #fff8dc;
+  border: 3px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 1000;
+  width: 300px;
+  text-align: center;
+}

@@ -12,11 +12,6 @@ export default function ProductionArea({ plantation, phase }) {
     <div className="zone production">
       <h3>🌱 Production (Trees Aging)</h3>
 
-      {/* 🔎 DEBUG — remove later */}
-      <pre style={{ fontSize: "10px", background: "#f5f5f5", padding: "6px" }}>
-        {JSON.stringify(plantation.trees, null, 2)}
-      </pre>
-
       <div className="production-grid">
         {fields.map((field) => {
           const treesInField = plantation.trees.filter(

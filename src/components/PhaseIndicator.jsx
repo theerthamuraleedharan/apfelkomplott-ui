@@ -32,9 +32,9 @@ export default function PhaseIndicator({ round, phase }) {
 
   return (
     <div className="phase-indicator">
-      <div className="round-info">
+      {/* <div className="round-info">
         🍏 <strong>Round {round}</strong> / 15
-      </div>
+      </div> */}
 
       <div className="step-info">
         Step {stepNumber} / 10 —{" "}

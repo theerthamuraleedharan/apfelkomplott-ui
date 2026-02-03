@@ -1,7 +1,11 @@
-export default function Controls({ phase, onNextRound, disabled }) {
+export default function Controls({ phase, onNextPhase }) {
   return (
-    <button onClick={onNextRound} disabled={disabled}>
-      Next Phase ({phase})
-    </button>
+    <div>
+      <p>Current Phase: {phase}</p>
+      <button onClick={onNextPhase}>
+        Next Phase
+      </button>
+    </div>
   );
 }
+

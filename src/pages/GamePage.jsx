@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   startGame,
   getGameState,
-  nextRound,
+  nextPhase,
   getMarket,
   buyInvestment
 } from "../api/gameApi";
@@ -31,11 +31,13 @@ export default function GamePage() {
     init();
   }, []);
 
-  async function handleNextRound() {
-    await nextRound();
-    const updated = await getGameState();
-    setGameState(updated);
-  }
+async function handleNextPhase() {
+  console.log("🚀 Calling nextPhase API");
+  const updated = await nextPhase();
+  console.log("✅ Updated state:", updated);
+  setGameState(updated);
+}
+
 
   async function handleBuyCrate() {
     await buyInvestment("BUY_CRATE");
@@ -66,6 +68,20 @@ export default function GamePage() {
     />
 
     <h1>🍏 Apfelkomplott</h1>
+        <pre style={{ fontSize: "10px" }}>
+          {JSON.stringify(gameState.activeEvents, null, 2)}
+        </pre>
+
+
+        {gameState.currentPhase === "DRAW_EVENT" &&
+    gameState.activeEvents?.length > 0 && (
+      <div className="event-popup">
+        <h3>📜 Event Card</h3>
+        <h4>{gameState.activeEvents[0].name}</h4>
+        <p>{gameState.activeEvents[0].description}</p>
+        <button onClick={handleNextPhase}>Continue</button>
+      </div>
+    )}
 
     <RoundTrack currentRound={gameState.currentRound} />
     
@@ -109,7 +125,7 @@ export default function GamePage() {
     {/* Controls (Next Phase button) */}
     <Controls
       phase={gameState.currentPhase}
-      onNextRound={handleNextRound}
+      onNextPhase={handleNextPhase}
     />
   </div>
 );
