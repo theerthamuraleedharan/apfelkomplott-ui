@@ -15,11 +15,15 @@ import PhaseIndicator from "../components/PhaseIndicator";
 import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import RoundTrack from "../components/RoundTrack";
+import EventCard from "../components/EventCard";
+
 
 
 export default function GamePage() {
   const [gameState, setGameState] = useState(null);
   const [market, setMarket] = useState([]);
+  const [eventVisible, setEventVisible] = useState(false);
+
 
   useEffect(() => {
     async function init() {
@@ -31,10 +35,15 @@ export default function GamePage() {
     init();
   }, []);
 
+  useEffect(() => {
+    if (gameState?.currentPhase === "DRAW_EVENT") {
+      setEventVisible(true);
+    }
+  }, [gameState?.currentPhase]);
+
+
 async function handleNextPhase() {
-  console.log("🚀 Calling nextPhase API");
   const updated = await nextPhase();
-  console.log("✅ Updated state:", updated);
   setGameState(updated);
 }
 
@@ -45,11 +54,18 @@ async function handleNextPhase() {
     setGameState(updated);
   }
 
-  async function buy(type) {
-  await buyInvestment(type);
-  const updated = await getGameState();
-  setGameState(updated);
+async function buy(type) {
+  try {
+    await buyInvestment(type);
+
+    const updated = await getGameState();
+    setGameState(updated);
+
+  } catch (err) {
+    alert(err.message);
+  }
 }
+
 
 
   if (!gameState) return <div>Loading...</div>;
@@ -73,14 +89,12 @@ async function handleNextPhase() {
         </pre>
 
 
-        {gameState.currentPhase === "DRAW_EVENT" &&
-    gameState.activeEvents?.length > 0 && (
-      <div className="event-popup">
-        <h3>📜 Event Card</h3>
-        <h4>{gameState.activeEvents[0].name}</h4>
-        <p>{gameState.activeEvents[0].description}</p>
-        <button onClick={handleNextPhase}>Continue</button>
-      </div>
+    {eventVisible &&
+      gameState.activeEvents.length > 0 && (
+        <EventCard
+          event={gameState.activeEvents[0]}
+          onContinue={() => setEventVisible(false)}
+        />
     )}
 
     <RoundTrack currentRound={gameState.currentRound} />
@@ -102,14 +116,15 @@ async function handleNextPhase() {
 
     {/* 🔽 INVESTMENT PANEL — ONLY IN INVEST PHASE */}
     {gameState.currentPhase === "INVEST" && (
-      <InvestmentPanel
-        money={gameState.money}
-        onBuySeedling={() => buy("BUY_SEEDLING")}
-        onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
-        onBuyCrate={() => buy("BUY_CRATE")}
-        onBuyStand={() => buy("BUY_SALES_STAND")}
-      />
-    )}
+    <InvestmentPanel
+      money={gameState.money}
+      onBuySeedling={() => buy("BUY_SEEDLING")}
+      onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
+      onBuyCrate={() => buy("BUY_CRATE")}
+      onBuyStand={() => buy("BUY_SALES_STAND")}
+    />
+  )}
+
     
 
     {/* Market (production cards) */}

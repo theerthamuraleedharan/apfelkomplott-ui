@@ -18,6 +18,7 @@ export default function Board({ gameState }) {
         plantation={plantation}
         phase={currentPhase}
       />
+
     </div>
   );
 }

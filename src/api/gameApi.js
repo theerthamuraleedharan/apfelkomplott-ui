@@ -37,8 +37,12 @@ export async function buyProductionCard(cardName) {
     body: JSON.stringify({ cardName }),
   });
 
-  return await res.json(); // ✅ important
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text); // 🔥 IMPORTANT
+  }
 }
+
 
 export async function buyInvestment(type) {
   const res = await fetch(`${BASE_URL}/invest`, {
@@ -47,5 +51,9 @@ export async function buyInvestment(type) {
     body: JSON.stringify({ investmentType: type }),
   });
 
-  return await res.json(); // ✅ important
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText);
+  }
 }
+

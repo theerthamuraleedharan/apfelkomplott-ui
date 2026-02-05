@@ -1,0 +1,39 @@
+.sales {
+  background: #fff8e1;
+  border: 2px dashed #c28c2c;
+}
+
+.stands {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stand {
+  border: 2px solid #c28c2c;
+  padding: 8px;
+  width: 120px;
+  background: white;
+}
+
+.stand-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.stand-content {
+  min-height: 30px;
+}
+
+.apple {
+  font-size: 20px;
+}
+
+.empty {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.active {
+  box-shadow: 0 0 10px gold;
+}

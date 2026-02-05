@@ -95,3 +95,27 @@
   width: 300px;
   text-align: center;
 }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+.modal h2 {
+  margin-top: 0;
+}
+
+.toast {
+  z-index: 9999;
+}

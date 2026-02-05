@@ -10,6 +10,10 @@ export default function ScoreBoard({ score, money }) {
     return () => clearTimeout(t);
   }, [money]);
 
+  if (!score) {
+    return <div className="scoreboard">Loading scores…</div>;
+  }
+
   return (
     <div className="scoreboard">
       <h2>Scores</h2>
@@ -24,4 +28,3 @@ export default function ScoreBoard({ score, money }) {
     </div>
   );
 }
-
