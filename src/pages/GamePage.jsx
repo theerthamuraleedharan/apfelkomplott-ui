@@ -16,6 +16,8 @@ import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import RoundTrack from "../components/RoundTrack";
 import EventCard from "../components/EventCard";
+import PhaseProgressBar from "../components/PhaseProgressBar";
+
 
 
 
@@ -84,10 +86,11 @@ async function buy(type) {
     />
 
     <h1>🍏 Apfelkomplott</h1>
-        <pre style={{ fontSize: "10px" }}>
-          {JSON.stringify(gameState.activeEvents, null, 2)}
-        </pre>
-
+       
+    <PhaseProgressBar
+      currentPhase={gameState.currentPhase}
+      round={gameState.currentRound}
+    />
 
     {eventVisible &&
       gameState.activeEvents.length > 0 && (
