@@ -66,3 +66,46 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* FULL SCREEN RESET */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* FULL SCREEN GAME */
+.game-root {
+  min-height: 100vh;
+  width: 100vw;
+  background: #eef4dc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* BOARD SURFACE */
+.game-board-container {
+  width: 95vw;
+  height: 95vh;
+  background: #f7fbe8;
+  border-radius: 24px;
+  padding: 20px;
+  overflow-y: auto;
+
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+
+/* TITLE */
+.game-title {
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .game-board-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+}

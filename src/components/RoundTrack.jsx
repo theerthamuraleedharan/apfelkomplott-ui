@@ -1,19 +1,17 @@
 import "./RoundTrack.css";
 
-export default function RoundTrack({ currentRound }) {
-  const rounds = Array.from({ length: 15 }, (_, i) => i + 1);
+export default function RoundTrack({ round }) {
+  const rounds = Array.from({ length: 16 }, (_, i) => i);
 
   return (
     <div className="round-track">
-      <span className="round start">Start</span>
-
-      {rounds.map((round) => (
-        <span
-          key={round}
-          className={`round ${round === currentRound ? "active" : ""}`}
+      {rounds.map(r => (
+        <div
+          key={r}
+          className={`round-cell ${r === round ? "active" : ""}`}
         >
-          {round}
-        </span>
+          {r === 0 ? "Start" : r}
+        </div>
       ))}
     </div>
   );

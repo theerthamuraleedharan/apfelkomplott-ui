@@ -1,4 +1,5 @@
 import "./PhaseProgressBar.css";
+import RoundTrack from "../components/RoundTrack";
 
 const PHASES = [
   "MOVE_MARKER",
@@ -29,7 +30,7 @@ const LABELS = {
 export default function PhaseProgressBar({ currentPhase, round }) {
   return (
     <div className="phase-bar">
-      <h3>🔄 Round {round}</h3>
+      <RoundTrack round={round} />
 
       <div className="phase-steps">
         {PHASES.map((phase, index) => {

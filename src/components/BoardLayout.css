@@ -1,0 +1,56 @@
+.board-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 20px;
+  width: 100%;
+}
+
+/* COMMON ZONE STYLE */
+.zone {
+  background: #fffef6;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* POSITIONING */
+.transport {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.sales {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.production {
+  grid-column: 1 / span 2;
+  grid-row: 2;
+}
+
+.event {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.scores {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+/* RESPONSIVE (mobile) */
+@media (max-width: 900px) {
+  .board-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transport,
+  .sales,
+  .production,
+  .event,
+  .scores {
+    grid-column: 1;
+  }
+}

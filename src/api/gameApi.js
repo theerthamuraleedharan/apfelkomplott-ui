@@ -3,7 +3,7 @@ const BASE_URL = "http://localhost:8081/game";
 /* ---------- GAME ---------- */
 
 export async function startGame() {
-  const res = await fetch(`${BASE_URL}/start-demo`, {
+  const res = await fetch(`${BASE_URL}/start`, {
     method: "POST",
   });
   return await res.json();

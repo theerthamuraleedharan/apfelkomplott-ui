@@ -1,0 +1,38 @@
+.production-grid {
+  display: flex;
+  gap: 12px;
+}
+
+.field {
+  background: rgba(255,255,255,0.7);
+  padding: 10px;
+  border-radius: 12px;
+  min-width: 90px;
+}
+
+.field-label {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.field-content {
+  min-height: 40px;
+}
+
+.tree.young {
+  font-size: 22px;
+}
+
+.tree.mature {
+  font-size: 26px;
+}
+
+.harvest-apple {
+  margin-left: 6px;
+  animation: pop 0.4s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
