@@ -1,11 +1,14 @@
-export default function Controls({ phase, onNextPhase }) {
+export default function Controls({ phase, onNextPhase, showScorePopup }) {
   return (
     <div>
       <p>Current Phase: {phase}</p>
-      <button onClick={onNextPhase}>
-        Next Phase
-      </button>
+      <button
+        disabled={showScorePopup}
+        onClick={onNextPhase}
+      >
+    Next
+</button>
+
     </div>
   );
 }
-

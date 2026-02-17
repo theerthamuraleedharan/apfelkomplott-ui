@@ -1,11 +1,11 @@
 .round-track {
   display: flex;
-  align-items: center;
-  gap: 10px;
   padding: 8px 12px;
   background: #eef5e6;
   border-radius: 20px;
   margin-bottom: 16px;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
 .round {
