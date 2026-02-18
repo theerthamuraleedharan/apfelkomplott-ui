@@ -73,6 +73,14 @@ html, body, #root {
   padding: 0;
 }
 
+body {
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #eef4dc;
+}
+
 /* FULL SCREEN GAME */
 .game-root {
   min-height: 100vh;

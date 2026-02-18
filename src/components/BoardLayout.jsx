@@ -7,7 +7,6 @@ import AppleAnimation from "./appleAnimation";
 
 import { useState, useEffect, useRef } from "react";
 
-
 import "./BoardLayout.css";
 
 export default function BoardLayout({ gameState, animationPhase }) {
@@ -38,31 +37,17 @@ const [showScorePopup, setShowScorePopup] = useState(false);
     }
   }, [gameState.lastScoreResult]);
 
-
-
-
-
-useEffect(() => {
-  if (
-    gameState.currentPhase === "DELIVER" &&
-    gameState.lastSellResult?.applesSold > 0
-  ) {
-    setShowSellPopup(true);
-  }
-}, [gameState.currentPhase]);
-
-
-
+  useEffect(() => {
+    if (
+      gameState.currentPhase === "DELIVER" &&
+      gameState.lastSellResult?.applesSold > 0
+    ) {
+      setShowSellPopup(true);
+    }
+  }, [gameState.currentPhase]);
 
   return (
     <div className="board-grid">
-
-      
-
-        {/* {animationPhase && (
-        <AppleAnimation type={animationPhase} />
-        )} */}
-
 
       {/* TOP ROW */}
       <div className="zone transport">
@@ -98,7 +83,6 @@ useEffect(() => {
           <h2>🍎 Sell Summary</h2>
 
           <p><strong>Apples sold:</strong> {gameState.lastSellResult.applesSold}</p>
-
           <p><strong>Base price:</strong> 1</p>
           <p><strong>Market bonus:</strong> {gameState.plantation.applePriceModifier}</p>
 

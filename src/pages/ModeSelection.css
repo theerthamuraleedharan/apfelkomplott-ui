@@ -1,0 +1,36 @@
+.mode-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #2f7d32, #1b5e20);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+  color: white;
+}
+
+.mode-options {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+}
+
+.mode-card {
+  background: white;
+  color: black;
+  padding: 30px;
+  border-radius: 20px;
+  width: 220px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.mode-card.organic {
+  border: 3px solid #4caf50;
+}
+
+.mode-card:hover {
+  box-shadow: 0 25px 40px rgba(0,0,0,0.4);
+}
