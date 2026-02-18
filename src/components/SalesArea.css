@@ -1,6 +1,5 @@
 .sales {
   background: #fff8e1;
-  border: 2px dashed #c28c2c;
 }
 
 .stands {
@@ -35,5 +34,5 @@
 }
 
 .active {
-  box-shadow: 0 0 10px gold;
+  box-shadow: 0 0 10px rgb(17, 17, 51);
 }
