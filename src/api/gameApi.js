@@ -2,12 +2,20 @@ const BASE_URL = "http://localhost:8081/game";
 
 /* ---------- GAME ---------- */
 
-export async function startGame() {
-  const res = await fetch(`${BASE_URL}/start`, {
-    method: "POST",
-  });
+export async function startGame(mode) {
+  const url = new URL(`${BASE_URL}/start`);
+  if (mode) url.searchParams.set("mode", mode);
+
+  const res = await fetch(url.toString(), { method: "POST" });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
   return await res.json();
 }
+
 
 export async function getGameState() {
   const res = await fetch(`${BASE_URL}/state`);

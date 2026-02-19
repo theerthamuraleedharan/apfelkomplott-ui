@@ -3,6 +3,8 @@ import GamePage from "./pages/GamePage";
 import StartScreen from "./pages/StartScreen";
 import ModeSelection from "./pages/ModeSelection";
 
+import { startGame as apiStartGame } from "./api/gameApi"; // ✅ add this
+
 function App() {
   const [screen, setScreen] = useState("START");
   const [gameMode, setGameMode] = useState(null);
@@ -20,6 +22,11 @@ function App() {
     }
   };
 
+  const handleRestart = () => {
+    setGameMode(null);     // reset mode
+    setScreen("START");    // go back to landing
+  };
+
   if (screen === "START") {
     return <StartScreen onPlay={() => setScreen("MODE")} />;
   }
@@ -28,7 +35,13 @@ function App() {
     return <ModeSelection onSelect={startGame} />;
   }
 
-  return <GamePage gameMode={gameMode} />;
+  return (
+    <GamePage
+      gameMode={gameMode}
+      onRestart={handleRestart}   // 👈 pass restart
+    />
+  );
 }
+
 
 export default App;

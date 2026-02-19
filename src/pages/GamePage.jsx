@@ -21,9 +21,8 @@ import PhaseProgressBar from "../components/PhaseProgressBar";
 import TransportZone from "../components/TransportZone";
 
 
+export default function GamePage({ gameMode, onRestart }) {
 
-
-export default function GamePage() {
   const [gameState, setGameState] = useState(null);
   const [market, setMarket] = useState([]);
   const [eventVisible, setEventVisible] = useState(false);
@@ -32,14 +31,16 @@ export default function GamePage() {
 
 
   useEffect(() => {
-    async function init() {
-      const state = await startGame();
-      setGameState(state);
-      const market = await getMarket();
-      setMarket(market);
-    }
-    init();
-  }, []);
+  async function init() {
+    const state = await getGameState();
+    setGameState(state);
+
+    const market = await getMarket();
+    setMarket(market);
+  }
+  init();
+}, []);
+
 
   useEffect(() => {
     if (gameState?.currentPhase === "DRAW_EVENT") {
@@ -97,15 +98,11 @@ async function buy(type) {
   <div className="game-root">
     <div className="game-board-container">
 
-      <GameOverModal
-        gameState={gameState}
-        onRestart={async () => {
-          const newState = await startGame();
-          setGameState(newState);
-          const market = await getMarket();
-          setMarket(market);
-        }}
-      />
+    <GameOverModal
+    gameState={gameState}
+    onRestart={onRestart}
+  />
+
 
       <h1 className="game-title">🍏 Apfelkomplott</h1>
 
