@@ -63,21 +63,7 @@ const [showScorePopup, setShowScorePopup] = useState(false);
         <ProductionZone plantation={gameState.plantation} />
       </div>
 
-      {/* BOTTOM ROW */}
-      {/* <div className="zone event">
-        {gameState.activeEvents[0] && (
-          <EventZone event={gameState.activeEvents[0]} />
-        )}
-      </div> */}
-
-      {/* <div className="zone scores">
-        <ScoreBoard
-          score={gameState.scoreTrack}
-          money={gameState.money}
-        />
-      </div> */}
-
-        {showSellPopup && gameState.lastSellResult && (
+      {showSellPopup && gameState.lastSellResult && (
       <div className="sell-overlay">
         <div className="sell-modal">
           <h2>🍎 Sell Summary</h2>

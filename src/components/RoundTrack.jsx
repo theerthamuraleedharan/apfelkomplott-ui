@@ -10,7 +10,7 @@ export default function RoundTrack({ round }) {
           key={r}
           className={`round-cell ${r === round ? "active" : ""}`}
         >
-          {r === 0 ? "Start" : r}
+          {r === 0 ? "Round" : r}
         </div>
       ))}
     </div>

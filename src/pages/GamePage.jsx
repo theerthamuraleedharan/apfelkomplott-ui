@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import "./GamePage.css";
+
 
 import {
-  startGame,
   getGameState,
   nextPhase,
   getMarket,
-  buyInvestment
+  buyInvestment,
+  buyProductionCard
 } from "../api/gameApi";
 
 import Board from "../components/Board";
@@ -65,12 +67,13 @@ export default function GamePage({ gameMode, onRestart }) {
 }, [gameState?.currentPhase]);
 
 
-
 async function handleNextPhase() {
   const updated = await nextPhase();
   setGameState(updated);
-}
 
+  const m = await getMarket();
+  setMarket(m);
+}
 
   async function handleBuyCrate() {
     await buyInvestment("BUY_CRATE");
@@ -90,19 +93,46 @@ async function buy(type) {
   }
 }
 
+async function handleBuyProductionCard(cardId) {
+  // optimistic remove (instant UI)
+  setMarket(prev => prev.filter(c => c.id !== cardId));
+
+  try {
+    await buyProductionCard(cardId);
+
+    const updated = await getGameState();
+    setGameState(updated);
+
+    // Don’t refill here; backend refills in Step 3.
+    // But we still sync to be safe:
+    const m = await getMarket();
+    setMarket(m);
+
+  } catch (err) {
+    alert(err.message);
+    // rollback market if error
+    const m = await getMarket();
+    setMarket(m);
+  }
+}
+
+
+function resolveCost(card, mode) {
+  if (!card?.cost) return "-";
+  if (typeof card.cost.fixed === "number") return card.cost.fixed;
+  if (card.cost.byMode && mode && card.cost.byMode[mode] != null) return card.cost.byMode[mode];
+  return "-";
+}
+
+
 
 
   if (!gameState) return <div>Loading...</div>;
 
- return (
+return (
   <div className="game-root">
-    <div className="game-board-container">
-
-    <GameOverModal
-    gameState={gameState}
-    onRestart={onRestart}
-  />
-
+    <div className="game-shell">
+      <GameOverModal gameState={gameState} onRestart={onRestart} />
 
       <h1 className="game-title">🍏 Apfelkomplott</h1>
 
@@ -118,47 +148,60 @@ async function buy(type) {
         />
       )}
 
+      {/* BOARD + SIDEBAR (2 columns only) */}
+      <div className="game-layout">
 
-      {/* <PhaseIndicator
-        round={gameState.currentRound}
-        phase={gameState.currentPhase}
-      /> */}
+        {/* LEFT COLUMN */}
+        <div className="board-col">
+          <BoardLayout
+            gameState={gameState}
+            animationPhase={animationPhase}
+          />
 
-      {/* MAIN BOARD */}
-      <BoardLayout gameState={gameState} animationPhase={animationPhase} />
+          {/* Investment panel BELOW the board (only in INVEST phase) */}
+          {gameState.currentPhase === "INVEST" && (
+            <div className="full-width" style={{ marginTop: 14 }}>
+              <InvestmentPanel
+                phase={gameState.currentPhase}
+                money={gameState.money}
+                onBuySeedling={() => buy("BUY_SEEDLING")}
+                onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
+                onBuyCrate={() => buy("BUY_CRATE")}
+                onBuyStand={() => buy("BUY_SALES_STAND")}
+              />
+            </div>
+          )}
+        </div>
 
-      <ScoreBoard
-        score={gameState.scoreTrack}
-        money={gameState.money}
-      />
+        {/* RIGHT COLUMN */}
+        <div className="sidebar">
+          <div className="panel score-panel">
+            <ScoreBoard score={gameState.scoreTrack} money={gameState.money} />
+          </div>
 
-      {gameState.currentPhase === "INVEST" && (
-        <InvestmentPanel
-          money={gameState.money}
-          onBuySeedling={() => buy("BUY_SEEDLING")}
-          onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
-          onBuyCrate={() => buy("BUY_CRATE")}
-          onBuyStand={() => buy("BUY_SALES_STAND")}
+          <div className="panel">
+            <Controls
+              phase={gameState.currentPhase}
+              onNextPhase={handleNextPhase}
+            />
+          </div>
+        </div>
+
+      </div>
+
+      {/* Production cards market below everything */}
+      <div className="full-width">
+       <Market
+          market={gameState.market ?? []}
+          mode={gameState.farmingMode}
+          canBuy={gameState.currentPhase === "INVEST"}
+          onBuy={handleBuyProductionCard}
         />
-      )}
-
-      {/* <Market
-        market={market}
-        phase={gameState.currentPhase}
-        onBuy={() => {
-          getGameState().then(setGameState);
-          getMarket().then(setMarket);
-        }}
-      /> */}
-
-      <Controls
-        phase={gameState.currentPhase}
-        onNextPhase={handleNextPhase}
-      />
-
+      </div>
     </div>
   </div>
 );
+
 
 
 }
