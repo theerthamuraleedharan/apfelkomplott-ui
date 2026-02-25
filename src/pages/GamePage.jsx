@@ -94,8 +94,14 @@ async function buy(type) {
 }
 
 async function handleBuyProductionCard(cardId) {
-  // optimistic remove (instant UI)
-  setMarket(prev => prev.filter(c => c.id !== cardId));
+  // optimistic: keep the same slot empty (no shifting)
+  setMarket(prev => {
+    const idx = prev.findIndex(c => c?.id === cardId);
+    if (idx === -1) return prev;
+    const copy = [...prev];
+    copy[idx] = null;
+    return copy;
+  });
 
   try {
     await buyProductionCard(cardId);
@@ -103,14 +109,14 @@ async function handleBuyProductionCard(cardId) {
     const updated = await getGameState();
     setGameState(updated);
 
-    // Don’t refill here; backend refills in Step 3.
-    // But we still sync to be safe:
+    // backend refills in Step 3, but keep UI synced
     const m = await getMarket();
     setMarket(m);
 
   } catch (err) {
     alert(err.message);
-    // rollback market if error
+
+    // rollback: re-sync from backend
     const m = await getMarket();
     setMarket(m);
   }
@@ -182,6 +188,7 @@ return (
           <div className="panel">
             <Controls
               phase={gameState.currentPhase}
+              mode={gameState.farmingMode}
               onNextPhase={handleNextPhase}
             />
           </div>
@@ -192,7 +199,7 @@ return (
       {/* Production cards market below everything */}
       <div className="full-width">
        <Market
-          market={gameState.market ?? []}
+          market={market}                     // ✅ use local market state
           mode={gameState.farmingMode}
           canBuy={gameState.currentPhase === "INVEST"}
           onBuy={handleBuyProductionCard}
