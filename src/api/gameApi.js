@@ -1,4 +1,5 @@
 const BASE_URL = "http://localhost:8081/game";
+export const ASSET_BASE_URL = "http://localhost:8081";
 
 /* ---------- GAME ---------- */
 

@@ -245,3 +245,145 @@
     rgba(255, 255, 255, 0)
   );
 }
+
+.prod-card__media{
+
+  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /
+}
+
+.prod-card__img{
+  width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+}
+
+.prod-card__qrWrap{
+  background: #fff;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+}
+
+.prod-card__imgPlaceholder{
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+
+.prod-card__qrImg {
+  width: 60px;      /* smaller */
+  height: 60px;
+  object-fit: contain;
+  background: white;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.cardModal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+}
+
+.cardModal__content {
+  position: relative;
+  max-width: 520px;
+  width: 100%;
+}
+
+.cardModal__close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  border: none;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+
+.prod-card--zoom {
+  transform: scale(1.15);
+  transform-origin: center;
+}
+
+.cardModal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 24px;
+
+  animation: modalFadeIn 160ms ease-out;
+}
+
+.cardModal__content {
+  position: relative;
+  max-width: 560px;
+  width: 100%;
+
+  animation: modalPopIn 180ms ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopIn {
+  from { transform: scale(0.92) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.prod-card--zoom {
+  transform: scale(1.18);
+  transform-origin: center;
+}
+
+/* Bigger text only inside zoom modal */
+.prod-card--zoom .prod-card__name {
+  font-size: 1.25rem;
+}
+
+.prod-card--zoom .prod-card__sub {
+  font-size: 1rem;
+}
+
+.prod-card--zoom .prod-card__sectionTitle {
+  font-size: 1.05rem;
+}
+
+.prod-card--zoom .stat__label,
+.prod-card--zoom .stat__value,
+.prod-card--zoom .effect__years {
+  font-size: 0.98rem;
+}
+
+.cardModal__close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 36px;
+}
