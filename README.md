@@ -1,16 +1,139 @@
-# React + Vite
+# Apfelkomplott UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend for the **Apfelkomplott** digital board game prototype. This project is part of a master thesis and implements the browser-based user interface for an orchard management game with strategy, scoring, market cards, and phase-based gameplay.
 
-Currently, two official plugins are available:
+The application is built with **React + Vite** and connects to a **Java Spring Boot** backend running locally.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Overview
 
-## React Compiler
+Apfelkomplott models orchard management decisions across multiple rounds. Players choose a farming strategy, move through game phases, invest in production, react to market cards, and balance three main outcome dimensions:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Economy
+- Environment
+- Health
 
-## Expanding the ESLint configuration
+The UI currently includes:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- A landing page and mode selection flow
+- A game board with production, transport, and sales areas
+- Round and phase tracking
+- Score and money display
+- Investment actions
+- Production card market with card effects, images, and QR code support
+- End-of-round scoring and sell-result popups
+
+## Tech Stack
+
+- React 19
+- Vite
+- Framer Motion
+- `qrcode.react`
+- Java Spring Boot backend API
+
+## Project Structure
+
+```text
+src/
+  api/
+    gameApi.js
+  components/
+    BoardLayout.jsx
+    Market.jsx
+    RoundTrack.jsx
+    ScoreBoard.jsx
+    ...
+  pages/
+    StartScreen.jsx
+    ModeSelection.jsx
+    GamePage.jsx
+```
+
+## Prerequisites
+
+Before running the frontend, make sure you have:
+
+- Node.js 18+ installed
+- npm installed
+- The Spring Boot backend running locally on `http://localhost:8081`
+
+This frontend currently expects the backend API at:
+
+```text
+http://localhost:8081/game
+```
+
+and static/media assets from:
+
+```text
+http://localhost:8081
+```
+
+## Installation
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+## Running the Project
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+Then open the local URL shown in the terminal, usually:
+
+```text
+http://localhost:5173
+```
+
+## Available Scripts
+
+- `npm run dev` starts the development server
+- `npm run build` creates a production build
+- `npm run preview` previews the production build locally
+- `npm run lint` runs ESLint
+
+## Backend Integration
+
+The frontend communicates with the backend through `src/api/gameApi.js`.
+
+Implemented API interactions include:
+
+- `POST /game/start?mode=...`
+- `GET /game/state`
+- `POST /game/next-phase`
+- `GET /game/market`
+- `POST /game/invest`
+- `POST /game/invest/production`
+
+## Gameplay Flow in the UI
+
+1. Open the landing page.
+2. Move to the mode selection screen.
+3. Choose either `CONVENTIONAL` or `ORGANIC`.
+4. Start the game and load the current game state from the backend.
+5. Progress through phases and interact with investments, market cards, and board sections.
+6. Review score changes, event cards, and game-over state.
+
+## Notes
+
+- This project uses local component state for screen transitions between landing, mode selection, and game screens.
+- It does not currently use React Router.
+- Several API URLs are hardcoded to `localhost:8081`.
+- The UI is designed for a thesis/demo workflow and can be extended further for production-style routing, environment configuration, and deployment.
+
+## Suggested Next Improvements
+
+- Move API base URLs to environment variables
+- Add React Router for real browser navigation
+- Improve error handling and loading states
+- Add tests for key components and flows
+- Align UI copy more closely with the thesis text
+
+## License
+
+No license has been added yet. Add one if this project will be shared publicly.
