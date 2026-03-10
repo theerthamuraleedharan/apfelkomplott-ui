@@ -32,7 +32,12 @@ function App() {
   }
 
   if (screen === "MODE") {
-    return <ModeSelection onSelect={startGame} />;
+    return (
+      <ModeSelection
+        onSelect={startGame}
+        onBack={() => setScreen("START")}
+      />
+    );
   }
 
   return (

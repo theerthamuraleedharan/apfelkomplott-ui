@@ -5,12 +5,12 @@ export default function RoundTrack({ round }) {
 
   return (
     <div className="round-track">
-      {rounds.map(r => (
+      {rounds.map((r) => (
         <div
           key={r}
           className={`round-cell ${r === round ? "active" : ""}`}
         >
-          {r === 0 ? "Round" : r}
+          <span className="round-cell__label">{r === 0 ? "Round" : r}</span>
         </div>
       ))}
     </div>

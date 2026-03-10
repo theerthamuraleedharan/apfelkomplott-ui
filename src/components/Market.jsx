@@ -4,7 +4,8 @@ import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
 
 export default function Market({ market, mode, canBuy, onBuy }) {
-  
+  const buyHint = "Available only during the Invest phase";
+
   useEffect(() => {
   const onKeyDown = (e) => {
     if (e.key === "Escape") setSelectedCard(null);
@@ -26,6 +27,23 @@ export default function Market({ market, mode, canBuy, onBuy }) {
     return n > 0 ? `+${n}` : `${n}`;
   }
 
+  function getHeaderMedia(card) {
+    if (card?.deck !== "SHORT_TERM") return [];
+    return (card.media ?? []).filter(
+      (item) =>
+        item && item.type === "image" && item.src
+    );
+  }
+
+  function getBodyMedia(card) {
+    return (card?.media ?? []).filter(
+      (item) =>
+        item &&
+        item.type === "qr" &&
+        (item.src || item.value)
+    );
+  }
+
   return (
     
     <div className="market">
@@ -38,6 +56,8 @@ export default function Market({ market, mode, canBuy, onBuy }) {
       <div className="market__grid market__grid--fixed">
         {Array.from({ length: 5 }).map((_, idx) => {
           const card = market[idx] ?? null;
+          const headerMedia = getHeaderMedia(card);
+          const bodyMedia = getBodyMedia(card);
           return (
             <div className="market__slot" key={idx}>
               {card ? (
@@ -50,6 +70,17 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   <div className="prod-card__top">
                     <div className="prod-card__topRow">
                       <div className="prod-card__name">{card.name}</div>
+                      {headerMedia.length > 0 && (
+                        <div className="prod-card__cornerMedia">
+                          {headerMedia.map((item, index) => (
+                            <CardMedia
+                              key={`${card.id}-header-${index}`}
+                              item={item}
+                              variant="corner"
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="prod-card__sub">
                       {card.deck === "SHORT_TERM" ? "Short-term" : "Long-term"}:{" "}
@@ -58,14 +89,17 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   </div>
 
                   <div className="prod-card__body">
-                    <div className="prod-card__sectionTitle">Effects</div>
-                     {card.media && card.media.length > 0 && (
-                      <div className="prod-card__media">
-                        {card.media.map((item, index) => (
-                          <CardMedia key={index} item={item} />
+                    {bodyMedia.length > 0 && (
+                      <div className="prod-card__bodyMedia">
+                        {bodyMedia.map((item, index) => (
+                          <CardMedia
+                            key={`${card.id}-body-${index}`}
+                            item={item}
+                          />
                         ))}
                       </div>
-                      )}
+                    )}
+                    <div className="prod-card__sectionTitle">Effects</div>
 
                     <div className="prod-card__effects">
                       {(card.effects ?? []).map((e, i) => (
@@ -93,17 +127,27 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                       <div className="cost__num">{resolveCost(card)}</div>
                       <div className="cost__label">Geld</div>
                     </div>
-                   <button
-                    className="buy-btn"
-                    disabled={!canBuy}
-                   onClick={(e) => {
-                        e.stopPropagation();     
-                        onBuy(card.id);
-                      }}
-                    title={canBuy ? "Buy this card" : "You can buy only during INVEST phase"}
-                  >
-                    Buy
-                  </button>
+                    <div
+                      className={`buy-btn-wrap${canBuy ? "" : " is-disabled"}`}
+                      title={canBuy ? "Buy this card" : buyHint}
+                    >
+                      <button
+                        className="buy-btn"
+                        disabled={!canBuy}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onBuy(card.id);
+                        }}
+                        aria-describedby={canBuy ? undefined : `buy-hint-${card.id}`}
+                      >
+                        Buy
+                      </button>
+                      {!canBuy && (
+                        <span className="buy-tooltip" id={`buy-hint-${card.id}`} role="tooltip">
+                          {buyHint}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -203,7 +247,14 @@ function CardMedia({ item }) {
     const src = resolveSrc(item.src);
     if (!src) return <div className="prod-card__imgPlaceholder">Image src missing</div>;
     if (failed) return <div className="prod-card__imgPlaceholder">Image not found</div>;
-    return <img className="prod-card__img" src={src} alt="" onError={() => setFailed(true)} />;
+    return (
+      <img
+        className="prod-card__img"
+        src={src}
+        alt=""
+        onError={() => setFailed(true)}
+      />
+    );
   }
 
   // qr media: if src exists, show QR as image
@@ -211,7 +262,14 @@ function CardMedia({ item }) {
     const src = resolveSrc(item.src);
     if (!src) return <div className="prod-card__imgPlaceholder">QR src missing</div>;
     if (failed) return <div className="prod-card__imgPlaceholder">QR image not found</div>;
-    return <img className="prod-card__qrImg" src={src} alt="QR" onError={() => setFailed(true)} />;
+    return (
+      <img
+        className="prod-card__qrImg"
+        src={src}
+        alt="QR"
+        onError={() => setFailed(true)}
+      />
+    );
   }
 
   // qr media: if value exists, generate QR

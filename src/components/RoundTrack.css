@@ -1,38 +1,61 @@
 .round-track {
   display: flex;
+  gap: 8px;
   padding: 8px 12px;
-  background: #eef5e6;
-  border-radius: 20px;
+  margin-top: 8px;
   margin-bottom: 16px;
   justify-content: space-between;
-  margin-top: 8px;
+  background: #eef5e6;
+  border-radius: 20px;
 }
 
-.round {
-  width: 28px;
-  height: 28px;
+.round-cell {
+  position: relative;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: #ffffff;
-  color: #555;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  background: #ffffff;
+  color: #555;
   font-size: 13px;
+  font-weight: 700;
   border: 1px solid #ccc;
+  overflow: hidden;
 }
 
-.round.start {
-  width: auto;
-  padding: 0 10px;
-  border-radius: 14px;
-  background: #c8e6c9;
-  font-weight: bold;
+.round-cell__label {
+  position: relative;
+  z-index: 1;
 }
 
-.round.active {
-  background: #4caf50;
-  color: white;
-  font-weight: bold;
-  border-color: #388e3c;
-  box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+.round-cell:first-child {
+  width: 72px;
+  border-radius: 24px;
+}
+
+.round-cell.active {
+  border-color: #d67a53;
+  box-shadow: 0 0 14px rgba(214, 122, 83, 0.35);
+}
+
+.round-cell.active::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background-image: url("/chickenRoundMarker.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.round-cell.active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.18);
 }
