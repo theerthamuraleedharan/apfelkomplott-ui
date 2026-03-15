@@ -1,34 +1,28 @@
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";
 import ProductionZone from "./ProductionZone";
-import EventZone from "./EventZone";
-import ScoreBoard from "./ScoreBoard";
-import AppleAnimation from "./appleAnimation";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "./BoardLayout.css";
 
 export default function BoardLayout({ gameState, animationPhase }) {
+  const [showSellPopup, setShowSellPopup] = useState(false);
+  const [showScorePopup, setShowScorePopup] = useState(false);
+  const lastShownScoreRef = useRef(null);
 
- const [showSellPopup, setShowSellPopup] = useState(false);
- const lastShownSellRef = useRef(null);
- const lastShownScoreRef = useRef(null);
-
-const [showScorePopup, setShowScorePopup] = useState(false);
+  const scoringResult = gameState.lastScoreResult;
 
   useEffect(() => {
-    const score = gameState.lastScoreResult;
+    const score = scoringResult;
     const hasReasons = (score?.reasons?.length ?? 0) > 0;
 
     if (
       score &&
-      (
-        score.economyChange !== 0 ||
+      (score.economyChange !== 0 ||
         score.environmentChange !== 0 ||
         score.healthChange !== 0 ||
-        hasReasons
-      )
+        hasReasons)
     ) {
       const scoreKey = JSON.stringify(score);
 
@@ -46,12 +40,10 @@ const [showScorePopup, setShowScorePopup] = useState(false);
     ) {
       setShowSellPopup(true);
     }
-  }, [gameState.currentPhase]);
+  }, [gameState.currentPhase, gameState.lastSellResult?.applesSold]);
 
   return (
     <div className="board-grid">
-
-      {/* TOP ROW */}
       <div className="zone transport">
         <TransportZone plantation={gameState.plantation} />
       </div>
@@ -60,7 +52,6 @@ const [showScorePopup, setShowScorePopup] = useState(false);
         <SalesZone plantation={gameState.plantation} />
       </div>
 
-      {/* MIDDLE ROW */}
       <div className="zone production">
         <ProductionZone
           plantation={gameState.plantation}
@@ -70,48 +61,66 @@ const [showScorePopup, setShowScorePopup] = useState(false);
       </div>
 
       {showSellPopup && gameState.lastSellResult && (
-      <div className="sell-overlay">
-        <div className="sell-modal">
-          <h2>🍎 Sell Summary</h2>
+        <div className="sell-overlay">
+          <div className="sell-modal">
+            <h2>Sell Summary</h2>
 
-          <p><strong>Apples sold:</strong> {gameState.lastSellResult.applesSold}</p>
-          <p><strong>Base price:</strong> 1</p>
-          <p><strong>Market bonus:</strong> {gameState.plantation.applePriceModifier}</p>
+            <p>
+              <strong>Apples sold:</strong> {gameState.lastSellResult.applesSold}
+            </p>
+            <p>
+              <strong>Base price:</strong> 1
+            </p>
+            <p>
+              <strong>Market bonus:</strong> {gameState.plantation.applePriceModifier}
+            </p>
 
-          <hr />
+            <hr />
 
-          <p style={{ fontSize: "18px", fontWeight: "bold" }}>
-            💰 Total earned: {gameState.lastSellResult.moneyEarned}
-          </p>
+            <p style={{ fontSize: "18px", fontWeight: "bold" }}>
+              Total earned: {gameState.lastSellResult.moneyEarned}
+            </p>
 
-          <button onClick={() => setShowSellPopup(false)}>
-            Close
-          </button>
+            <button onClick={() => setShowSellPopup(false)}>Close</button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
-    {showScorePopup && gameState.lastScoreResult && (
-    <div className="score-overlay">
-      <div className="score-modal">
-        <h2>📊 Round Scoring</h2>
+      {showScorePopup && scoringResult && (
+        <div className="score-overlay">
+          <div className="score-modal">
+            <div className="score-modal__eyebrow">Round Summary</div>
+            <h2>Round Scoring</h2>
 
-        <p>Economy: {gameState.lastScoreResult.economyChange}</p>
-        <p>Environment: {gameState.lastScoreResult.environmentChange}</p>
-        <p>Health: {gameState.lastScoreResult.healthChange}</p>
+            <div className="score-modal__stats">
+              <div className="score-modal__stat">
+                <span>Economy</span>
+                <strong>{scoringResult.economyChange}</strong>
+              </div>
+              <div className="score-modal__stat">
+                <span>Environment</span>
+                <strong>{scoringResult.environmentChange}</strong>
+              </div>
+              <div className="score-modal__stat">
+                <span>Health</span>
+                <strong>{scoringResult.healthChange}</strong>
+              </div>
+            </div>
 
-          {gameState.lastScoreResult.reasons.map((reason, index) => (
-            <p key={index}>{reason}</p>
-          ))}
+            {(scoringResult.reasons ?? []).length > 0 && (
+              <div className="score-modal__reasons">
+                {(scoringResult.reasons ?? []).map((reason, index) => (
+                  <p key={index}>{reason}</p>
+                ))}
+              </div>
+            )}
 
-        <button onClick={() => setShowScorePopup(false)}>
-          Close
-        </button>
-      </div>
+            <button className="score-modal__button" onClick={() => setShowScorePopup(false)}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-)}
-
-
- </div>
   );
 }

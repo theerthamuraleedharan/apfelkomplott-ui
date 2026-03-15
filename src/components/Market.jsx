@@ -28,8 +28,7 @@ export default function Market({ market, mode, canBuy, onBuy }) {
   }
 
   function getHeaderMedia(card) {
-    if (card?.deck !== "SHORT_TERM") return [];
-    return (card.media ?? []).filter(
+    return (card?.media ?? []).filter(
       (item) =>
         item && item.type === "image" && item.src
     );
@@ -185,18 +184,22 @@ export default function Market({ market, mode, canBuy, onBuy }) {
       </button>
 
       {/* Reuse the same card UI but bigger */}
+      
       <div className="prod-card prod-card--zoom">
         <div className="prod-card__top">
-          {selectedCard.media && selectedCard.media.length > 0 && (
-            <div className="prod-card__media">
-              {selectedCard.media.map((item, index) => (
-                <CardMedia key={index} item={item} />
-              ))}
-            </div>
-          )}
-
           <div className="prod-card__topRow">
             <div className="prod-card__name">{selectedCard.name}</div>
+            {getHeaderMedia(selectedCard).length > 0 && (
+              <div className="prod-card__cornerMedia">
+                {getHeaderMedia(selectedCard).map((item, index) => (
+                  <CardMedia
+                    key={`${selectedCard.id}-header-${index}`}
+                    item={item}
+                    variant="corner"
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="prod-card__sub">
@@ -321,7 +324,10 @@ function getEffectSections(card) {
 
   if (card.effectsByPlantationSize) {
     return Object.entries(card.effectsByPlantationSize).map(([key, effects]) => ({
-      title: prettifyPlantationSize(key),
+      title:
+        key === "SMALL" ? "Small plantations" :
+        key === "MEDIUM" ? "Medium plantations" :
+        key === "LARGE" ? "Large plantations" : key,
       effects: effects ?? [],
       kind: "plantationSize"
     }));
@@ -329,7 +335,7 @@ function getEffectSections(card) {
 
   if (card.effectsByMode) {
     return Object.entries(card.effectsByMode).map(([key, effects]) => ({
-      title: key === "BIO" ? "Organic farming" : "Conventional farming",
+      title: key === "ORGANIC" ? "Conversion to Organic" : "Conventional Operation",
       effects: effects ?? [],
       kind: "mode"
     }));
@@ -343,3 +349,4 @@ function getEffectSections(card) {
     }
   ];
 }
+

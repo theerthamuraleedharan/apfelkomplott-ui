@@ -23,15 +23,14 @@ export default function ScoreBoard({ score, money }) {
         <div className="scoreHud__title">Scores</div>
 
         <div className="moneyBadge" title="Money">
-          <span className="moneyBadge__icon">🪙</span>
+          <span className="moneyBadge__icon">Cash</span>
           <span className="moneyBadge__value">{money}</span>
         </div>
       </div>
 
-      <ScoreBar label="📊 Economy" value={economy} />
-      <ScoreBar label="🌿 Environment" value={environment} />
-      <ScoreBar label="❤️ Health" value={health} />
-
+      <ScoreBar label="Economy" value={economy} />
+      <ScoreBar label="Environment" value={environment} />
+      <ScoreBar label="Health" value={health} />
     </div>
   );
 }
