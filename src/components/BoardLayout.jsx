@@ -62,7 +62,11 @@ const [showScorePopup, setShowScorePopup] = useState(false);
 
       {/* MIDDLE ROW */}
       <div className="zone production">
-        <ProductionZone plantation={gameState.plantation} />
+        <ProductionZone
+          plantation={gameState.plantation}
+          phase={gameState.currentPhase}
+          round={gameState.currentRound}
+        />
       </div>
 
       {showSellPopup && gameState.lastSellResult && (
