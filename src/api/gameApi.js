@@ -37,13 +37,9 @@ export async function getMarket() {
   return await res.json();
 }
 
-/* ---------- INVESTMENTS ---------- */
-
-export async function buyProductionCard(cardId) {
-  const res = await fetch(`${BASE_URL}/invest/production`, {
+export async function cardScoring() {
+  const res = await fetch(`${BASE_URL}/card-scoring`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cardId }),  
   });
 
   if (!res.ok) {
@@ -51,7 +47,22 @@ export async function buyProductionCard(cardId) {
     throw new Error(text);
   }
 
-  return await res.json(); // return updated GameState
+  return await res.json();
+}
+
+/* ---------- INVESTMENTS ---------- */
+
+export async function buyProductionCard(cardId) {
+  const res = await fetch(`${BASE_URL}/buy-card?cardId=${encodeURIComponent(cardId)}`, {
+    method: "POST",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
 }
 
 

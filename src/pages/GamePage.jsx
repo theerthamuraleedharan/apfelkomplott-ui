@@ -6,6 +6,7 @@ import {
   getGameState,
   nextPhase,
   getMarket,
+  cardScoring,
   buyInvestment,
   buyProductionCard
 } from "../api/gameApi";
@@ -20,8 +21,6 @@ import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import EventCard from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
-import TransportZone from "../components/TransportZone";
-
 
 export default function GamePage({ gameMode, onRestart }) {
 
@@ -30,15 +29,17 @@ export default function GamePage({ gameMode, onRestart }) {
   const [eventVisible, setEventVisible] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(null);
 
+  async function refreshGame() {
+    const [state, currentMarket] = await Promise.all([getGameState(), getMarket()]);
+    setGameState(state);
+    setMarket(currentMarket);
+  }
+
 
 
   useEffect(() => {
   async function init() {
-    const state = await getGameState();
-    setGameState(state);
-
-    const market = await getMarket();
-    setMarket(market);
+    await refreshGame();
   }
   init();
 }, []);
@@ -69,6 +70,14 @@ export default function GamePage({ gameMode, onRestart }) {
 
 async function handleNextPhase() {
   const updated = await nextPhase();
+   if (updated.productionCardFinalScoreResult?.reasons?.length > 0) {
+    alert(updated.productionCardFinalScoreResult.reasons.join("\n"));
+  }
+
+  if (updated.lastScoreResult?.reasons?.length > 0) {
+    alert(updated.lastScoreResult.reasons.join("\n"));
+  }
+
   setGameState(updated);
 
   const m = await getMarket();
@@ -104,21 +113,21 @@ async function handleBuyProductionCard(cardId) {
   });
 
   try {
-    await buyProductionCard(cardId);
+    const result = await buyProductionCard(cardId);
 
-    const updated = await getGameState();
-    setGameState(updated);
+    if (result?.reasons?.length) {
+      alert(result.reasons.join("\n"));
+    }
 
-    // backend refills in Step 3, but keep UI synced
-    const m = await getMarket();
-    setMarket(m);
+    //await cardScoring();
+
+    await refreshGame();
 
   } catch (err) {
     alert(err.message);
 
     // rollback: re-sync from backend
-    const m = await getMarket();
-    setMarket(m);
+    await refreshGame();
   }
 }
 

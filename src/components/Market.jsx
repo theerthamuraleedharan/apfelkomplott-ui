@@ -101,22 +101,30 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                     )}
                     <div className="prod-card__sectionTitle">Effects</div>
 
-                    <div className="prod-card__effects">
-                      {(card.effects ?? []).map((e, i) => (
-                        <div className="effect" key={i}>
-                          <div className="effect__years">
-                            Year {e.years?.join(", ")}
-                          </div>
+                      <div className="prod-card__effects">
+                      {getEffectSections(card).map((section, sectionIndex) => (
+                        <div key={sectionIndex} className="effectGroup">
+                          {section.title && (
+                            <div className="effectGroup__title">{section.title}</div>
+                          )}
 
-                          <div className="effect__stats">
-                            <Stat label="💰 Eco" value={formatDelta(e.economy)} />
-                            <Stat label="🌿 Env" value={formatDelta(e.environment)} />
-                            <Stat label="❤️ Health" value={formatDelta(e.health)} />
-                          </div>
+                          {section.effects.map((e, i) => (
+                            <div className="effect" key={`${sectionIndex}-${i}`}>
+                              <div className="effect__years">
+                                Year {e.years?.join(", ")}
+                              </div>
+
+                              <div className="effect__stats">
+                                <Stat label="💰 Eco" value={formatDelta(e.economy)} />
+                                <Stat label="🌿 Env" value={formatDelta(e.environment)} />
+                                <Stat label="❤️ Health" value={formatDelta(e.health)} />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       ))}
 
-                      {(card.effects ?? []).length === 0 && (
+                      {getEffectSections(card).every(section => (section.effects ?? []).length === 0) && (
                         <div className="no-effects">No effects configured.</div>
                       )}
                     </div>
@@ -201,15 +209,25 @@ export default function Market({ market, mode, canBuy, onBuy }) {
           <div className="prod-card__sectionTitle">Effects</div>
 
           <div className="prod-card__effects">
-            {(selectedCard.effects ?? []).map((e, i) => (
-              <div className="effect" key={i}>
-                <div className="effect__years">Year {e.years?.join(", ")}</div>
-                <div className="effect__stats">
-                  <Stat label="💰 Eco" value={formatDelta(e.economy)} />
-                  <Stat label="🌿 Env" value={formatDelta(e.environment)} />
-                  <Stat label="❤️ Health" value={formatDelta(e.health)} />
-                </div>
-              </div>
+            {getEffectSections(selectedCard).map((section, sectionIndex) => (
+              <div key={sectionIndex} className="effectGroup">
+                {section.title && (
+                  <div className="effectGroup__title">{section.title}</div>
+                )}
+
+                {section.effects.map((e, i) => (
+                  <div className="effect" key={`${sectionIndex}-${i}`}>
+                    <div className="effect__years">
+                      Year {e.years?.join(", ")}
+                    </div>
+                    <div className="effect__stats">
+                      <Stat label="💰 Eco" value={formatDelta(e.economy)} />
+                      <Stat label="🌿 Env" value={formatDelta(e.environment)} />
+                      <Stat label="❤️ Health" value={formatDelta(e.health)} />
+                    </div>
+                  </div>
+                ))}
+            </div>
             ))}
           </div>
         </div>
@@ -282,4 +300,46 @@ function CardMedia({ item }) {
   }
 
   return null;
+}
+
+function prettifyPlantationSize(size) {
+  if (!size) return "";
+  switch (size) {
+    case "SMALL":
+      return "Small plantations";
+    case "MEDIUM":
+      return "Medium plantations";
+    case "LARGE":
+      return "Large plantations";
+    default:
+      return size;
+  }
+}
+
+function getEffectSections(card) {
+  if (!card) return [];
+
+  if (card.effectsByPlantationSize) {
+    return Object.entries(card.effectsByPlantationSize).map(([key, effects]) => ({
+      title: prettifyPlantationSize(key),
+      effects: effects ?? [],
+      kind: "plantationSize"
+    }));
+  }
+
+  if (card.effectsByMode) {
+    return Object.entries(card.effectsByMode).map(([key, effects]) => ({
+      title: key === "BIO" ? "Organic farming" : "Conventional farming",
+      effects: effects ?? [],
+      kind: "mode"
+    }));
+  }
+
+  return [
+    {
+      title: null,
+      effects: card.effects ?? [],
+      kind: "default"
+    }
+  ];
 }

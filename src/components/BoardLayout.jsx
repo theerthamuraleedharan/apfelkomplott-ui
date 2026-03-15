@@ -19,13 +19,15 @@ const [showScorePopup, setShowScorePopup] = useState(false);
 
   useEffect(() => {
     const score = gameState.lastScoreResult;
+    const hasReasons = (score?.reasons?.length ?? 0) > 0;
 
     if (
       score &&
       (
         score.economyChange !== 0 ||
         score.environmentChange !== 0 ||
-        score.healthChange !== 0
+        score.healthChange !== 0 ||
+        hasReasons
       )
     ) {
       const scoreKey = JSON.stringify(score);

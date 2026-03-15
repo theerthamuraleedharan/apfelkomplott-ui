@@ -236,6 +236,16 @@
   gap: 8px;
 }
 
+.effectGroup {
+  margin-bottom: 12px;
+}
+
+.effectGroup__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  color: #555;
+}
 .stat {
   border-radius: 12px;
   border: 1px solid rgba(26, 26, 26, 0.10);
