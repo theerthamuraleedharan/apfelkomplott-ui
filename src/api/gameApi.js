@@ -37,6 +37,11 @@ export async function getMarket() {
   return await res.json();
 }
 
+export async function getActiveProductionCards() {
+  const res = await fetch(`${BASE_URL}/active-production-cards`);
+  return await res.json();
+}
+
 export async function cardScoring() {
   const res = await fetch(`${BASE_URL}/card-scoring`, {
     method: "POST",

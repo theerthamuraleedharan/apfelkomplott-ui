@@ -5,11 +5,13 @@ import {
   getGameState,
   nextPhase,
   getMarket,
+  getActiveProductionCards,
   buyInvestment,
   buyProductionCard,
 } from "../api/gameApi";
 
 import BoardLayout from "../components/BoardLayout";
+import ActiveCardsPanel from "../components/ActiveCardsPanel";
 import Market from "../components/Market";
 import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
@@ -85,6 +87,7 @@ function delay(ms) {
 export default function GamePage({ onRestart }) {
   const [gameState, setGameState] = useState(null);
   const [market, setMarket] = useState([]);
+  const [activeProductionCards, setActiveProductionCards] = useState([]);
   const [eventVisible, setEventVisible] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(null);
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
@@ -114,13 +117,17 @@ export default function GamePage({ onRestart }) {
 
   async function refreshGame({ preserveSlots = true } = {}) {
     // State and market are refreshed together so board UI and card slots stay in sync.
-    const state = await getGameState();
+    const [state, activeCards] = await Promise.all([
+      getGameState(),
+      getActiveProductionCards(),
+    ]);
     const currentMarket = await fetchMarketForPhase(
       preserveSlots ? state.currentPhase : "REFILL_CARDS",
       preserveSlots ? market : []
     );
     setGameState(state);
     setMarket(currentMarket);
+    setActiveProductionCards(Array.isArray(activeCards) ? activeCards : []);
     return state;
   }
 
@@ -164,6 +171,8 @@ export default function GamePage({ onRestart }) {
     }
 
     setGameState(updated);
+    const activeCards = await getActiveProductionCards();
+    setActiveProductionCards(Array.isArray(activeCards) ? activeCards : []);
     setMarket((prev) => prev);
     const currentMarket = await fetchMarketForPhase(updated.currentPhase, market);
     setMarket(currentMarket);
@@ -374,6 +383,13 @@ export default function GamePage({ onRestart }) {
               />
             </div>
           </aside>
+        </div>
+
+        <div className="full-width">
+          <ActiveCardsPanel
+            activeCards={activeProductionCards}
+            currentRound={gameState.currentRound}
+          />
         </div>
 
         <div className="full-width">

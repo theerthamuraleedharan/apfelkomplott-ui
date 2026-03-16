@@ -5,21 +5,54 @@ import { useEffect, useState } from "react";
 
 export default function Market({ market, mode, canBuy, onBuy }) {
   const buyHint = "Available only during the Invest phase";
+  const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
-  const onKeyDown = (e) => {
-    if (e.key === "Escape") setSelectedCard(null);
-  };
-  window.addEventListener("keydown", onKeyDown);
-  return () => window.removeEventListener("keydown", onKeyDown);
-}, []);
-  const [selectedCard, setSelectedCard] = useState(null);
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setSelectedCard(null);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   function resolveCost(card) {
     if (!card?.cost) return "-";
     if (typeof card.cost.fixed === "number") return card.cost.fixed;
-    if (card.cost.byMode && mode && card.cost.byMode[mode] != null)
+    if (card.cost.byMode && mode && card.cost.byMode[mode] != null) {
       return card.cost.byMode[mode];
+    }
     return "-";
+  }
+
+  function getCostDisplay(card) {
+    if (!card?.cost) {
+      return { type: "single", value: "-" };
+    }
+
+    if (typeof card.cost.fixed === "number") {
+      return { type: "single", value: card.cost.fixed };
+    }
+
+    if (card.cost.byMode) {
+      return {
+        type: "byMode",
+        values: [
+          {
+            key: "CONVENTIONAL",
+            label: "Conventional",
+            value: card.cost.byMode.CONVENTIONAL ?? "-",
+          },
+          {
+            key: "ORGANIC",
+            label: "Organic",
+            value: card.cost.byMode.ORGANIC ?? "-",
+          },
+        ],
+      };
+    }
+
+    return { type: "single", value: resolveCost(card) };
   }
 
   function formatDelta(n) {
@@ -27,117 +60,113 @@ export default function Market({ market, mode, canBuy, onBuy }) {
     return n > 0 ? `+${n}` : `${n}`;
   }
 
+  function getDeckLabel(card) {
+    return card?.deck === "SHORT_TERM" ? "Short-term" : "Long-term";
+  }
+
   function getHeaderMedia(card) {
-    return (card?.media ?? []).filter(
-      (item) =>
-        item && item.type === "image" && item.src
-    );
+    return (card?.media ?? []).filter((item) => item && item.type === "image" && item.src);
   }
 
   function getBodyMedia(card) {
-    return (card?.media ?? []).filter(
-      (item) =>
-        item &&
-        item.type === "qr" &&
-        (item.src || item.value)
-    );
+    return (card?.media ?? []).filter((item) => item && item.type === "qr" && (item.src || item.value));
   }
 
+  const openCard = (card) => setSelectedCard(card);
+
   return (
-    
     <div className="market">
       <div className="market__header">
-        <h3 className="market__title">Production Cards</h3>
-        <div className="market__meta">
-          Market (5 slots) {mode ? `• Mode: ${mode}` : ""}
+        <div>
+          <div className="market__eyebrow">Investment Market</div>
+          <h3 className="market__title">Production Cards</h3>
+        </div>
+        <div className="market__metaWrap">
+          <div className="market__meta">5 market slots</div>
+          {mode ? <div className="market__meta market__meta--accent">Mode: {mode}</div> : null}
         </div>
       </div>
+
       <div className="market__grid market__grid--fixed">
         {Array.from({ length: 5 }).map((_, idx) => {
           const card = market[idx] ?? null;
           const headerMedia = getHeaderMedia(card);
           const bodyMedia = getBodyMedia(card);
+
           return (
             <div className="market__slot" key={idx}>
               {card ? (
-                <div className="prod-card"
+                <div
+                  className="prod-card"
                   role="button"
                   tabIndex={0}
-                  onClick={() => setSelectedCard(card)}
-                  onKeyDown={(e) => e.key === "Enter" && setSelectedCard(card)}
+                  onClick={() => openCard(card)}
+                  onKeyDown={(e) => e.key === "Enter" && openCard(card)}
                 >
+                  <div className="prod-card__glow" aria-hidden="true" />
+
                   <div className="prod-card__top">
+                    <div className="prod-card__chips">
+                      <span className={`prod-card__chip prod-card__chip--${card.deck === "SHORT_TERM" ? "short" : "long"}`}>
+                        {getDeckLabel(card)}
+                      </span>
+                      <span className="prod-card__chip prod-card__chip--ghost">Inspect</span>
+                    </div>
+
                     <div className="prod-card__topRow">
                       <div className="prod-card__name">{card.name}</div>
                       {headerMedia.length > 0 && (
                         <div className="prod-card__cornerMedia">
                           {headerMedia.map((item, index) => (
-                            <CardMedia
-                              key={`${card.id}-header-${index}`}
-                              item={item}
-                              variant="corner"
-                            />
+                            <CardMedia key={`${card.id}-header-${index}`} item={item} variant="corner" />
                           ))}
                         </div>
                       )}
                     </div>
-                    <div className="prod-card__sub">
-                      {card.deck === "SHORT_TERM" ? "Short-term" : "Long-term"}:{" "}
-                      {card.category}
-                    </div>
+
+                    <div className="prod-card__sub">{card.category}</div>
                   </div>
 
                   <div className="prod-card__body">
                     {bodyMedia.length > 0 && (
                       <div className="prod-card__bodyMedia">
                         {bodyMedia.map((item, index) => (
-                          <CardMedia
-                            key={`${card.id}-body-${index}`}
-                            item={item}
-                          />
+                          <CardMedia key={`${card.id}-body-${index}`} item={item} />
                         ))}
                       </div>
                     )}
+
                     <div className="prod-card__sectionTitle">Effects</div>
 
-                      <div className="prod-card__effects">
+                    <div className="prod-card__effects">
                       {getEffectSections(card).map((section, sectionIndex) => (
                         <div key={sectionIndex} className="effectGroup">
-                          {section.title && (
-                            <div className="effectGroup__title">{section.title}</div>
-                          )}
+                          {section.title && <div className="effectGroup__title">{section.title}</div>}
 
-                          {section.effects.map((e, i) => (
-                            <div className="effect" key={`${sectionIndex}-${i}`}>
-                              <div className="effect__years">
-                                Year {e.years?.join(", ")}
-                              </div>
+                          {section.effects.map((effect, effectIndex) => (
+                            <div className="effect" key={`${sectionIndex}-${effectIndex}`}>
+                              <div className="effect__years">Year {effect.years?.join(", ")}</div>
 
                               <div className="effect__stats">
-                                <Stat label="💰 Eco" value={formatDelta(e.economy)} />
-                                <Stat label="🌿 Env" value={formatDelta(e.environment)} />
-                                <Stat label="❤️ Health" value={formatDelta(e.health)} />
+                                <Stat label="Eco" value={formatDelta(effect.economy)} />
+                                <Stat label="Env" value={formatDelta(effect.environment)} />
+                                <Stat label="Health" value={formatDelta(effect.health)} />
                               </div>
                             </div>
                           ))}
                         </div>
                       ))}
 
-                      {getEffectSections(card).every(section => (section.effects ?? []).length === 0) && (
+                      {getEffectSections(card).every((section) => (section.effects ?? []).length === 0) && (
                         <div className="no-effects">No effects configured.</div>
                       )}
                     </div>
                   </div>
 
-                  <div className="prod-card__bottom">
-                    <div className="cost">
-                      <div className="cost__num">{resolveCost(card)}</div>
-                      <div className="cost__label">Geld</div>
-                    </div>
-                    <div
-                      className={`buy-btn-wrap${canBuy ? "" : " is-disabled"}`}
-                      title={canBuy ? "Buy this card" : buyHint}
-                    >
+                  <div className={`prod-card__bottom${card.cost?.byMode ? " prod-card__bottom--dual" : ""}`}>
+                    <CostDisplay card={card} mode={mode} getCostDisplay={getCostDisplay} />
+
+                    <div className={`buy-btn-wrap${canBuy ? "" : " is-disabled"}`} title={canBuy ? "Buy this card" : buyHint}>
                       <button
                         className="buy-btn"
                         disabled={!canBuy}
@@ -149,6 +178,7 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                       >
                         Buy
                       </button>
+
                       {!canBuy && (
                         <span className="buy-tooltip" id={`buy-hint-${card.id}`} role="tooltip">
                           {buyHint}
@@ -159,6 +189,7 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                 </div>
               ) : (
                 <div className="marketEmpty">
+                  <div className="marketEmpty__icon">+</div>
                   <div className="marketEmpty__label">Empty slot</div>
                   <div className="marketEmpty__sub">Refills in Step 3</div>
                 </div>
@@ -167,77 +198,72 @@ export default function Market({ market, mode, canBuy, onBuy }) {
           );
         })}
       </div>
+
       {selectedCard && (
-  <div
-    className="cardModal__backdrop"
-    onClick={() => setSelectedCard(null)}
-  >
-    <div
-      className="cardModal__content"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button
-        className="cardModal__close"
-        onClick={() => setSelectedCard(null)}
-      >
-        ✕
-      </button>
+        <div className="cardModal__backdrop" onClick={() => setSelectedCard(null)}>
+          <div className="cardModal__content" onClick={(e) => e.stopPropagation()}>
+            <button className="cardModal__close" onClick={() => setSelectedCard(null)}>
+              x
+            </button>
 
-      {/* Reuse the same card UI but bigger */}
-      
-      <div className="prod-card prod-card--zoom">
-        <div className="prod-card__top">
-          <div className="prod-card__topRow">
-            <div className="prod-card__name">{selectedCard.name}</div>
-            {getHeaderMedia(selectedCard).length > 0 && (
-              <div className="prod-card__cornerMedia">
-                {getHeaderMedia(selectedCard).map((item, index) => (
-                  <CardMedia
-                    key={`${selectedCard.id}-header-${index}`}
-                    item={item}
-                    variant="corner"
-                  />
-                ))}
+            <div className="prod-card prod-card--zoom">
+              <div className="prod-card__glow" aria-hidden="true" />
+
+              <div className="prod-card__top">
+                <div className="prod-card__chips">
+                  <span
+                    className={`prod-card__chip prod-card__chip--${selectedCard.deck === "SHORT_TERM" ? "short" : "long"}`}
+                  >
+                    {getDeckLabel(selectedCard)}
+                  </span>
+                  <span className="prod-card__chip prod-card__chip--ghost">Detailed view</span>
+                </div>
+
+                <div className="prod-card__topRow">
+                  <div className="prod-card__name">{selectedCard.name}</div>
+                  {getHeaderMedia(selectedCard).length > 0 && (
+                    <div className="prod-card__cornerMedia">
+                      {getHeaderMedia(selectedCard).map((item, index) => (
+                        <CardMedia key={`${selectedCard.id}-header-${index}`} item={item} variant="corner" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="prod-card__sub">{selectedCard.category}</div>
               </div>
-            )}
-          </div>
 
-          <div className="prod-card__sub">
-            {selectedCard.deck === "SHORT_TERM" ? "Short-term" : "Long-term"}:{" "}
-            {selectedCard.category}
-          </div>
-        </div>
+              <div className="prod-card__body">
+                <div className="prod-card__sectionTitle">Effects</div>
 
-        <div className="prod-card__body">
-          <div className="prod-card__sectionTitle">Effects</div>
+                <div className="prod-card__effects">
+                  {getEffectSections(selectedCard).map((section, sectionIndex) => (
+                    <div key={sectionIndex} className="effectGroup">
+                      {section.title && <div className="effectGroup__title">{section.title}</div>}
 
-          <div className="prod-card__effects">
-            {getEffectSections(selectedCard).map((section, sectionIndex) => (
-              <div key={sectionIndex} className="effectGroup">
-                {section.title && (
-                  <div className="effectGroup__title">{section.title}</div>
-                )}
+                      {section.effects.map((effect, effectIndex) => (
+                        <div className="effect" key={`${sectionIndex}-${effectIndex}`}>
+                          <div className="effect__years">Year {effect.years?.join(", ")}</div>
 
-                {section.effects.map((e, i) => (
-                  <div className="effect" key={`${sectionIndex}-${i}`}>
-                    <div className="effect__years">
-                      Year {e.years?.join(", ")}
+                          <div className="effect__stats">
+                            <Stat label="Eco" value={formatDelta(effect.economy)} />
+                            <Stat label="Env" value={formatDelta(effect.environment)} />
+                            <Stat label="Health" value={formatDelta(effect.health)} />
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="effect__stats">
-                      <Stat label="💰 Eco" value={formatDelta(e.economy)} />
-                      <Stat label="🌿 Env" value={formatDelta(e.environment)} />
-                      <Stat label="❤️ Health" value={formatDelta(e.health)} />
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              <div className={`prod-card__bottom${selectedCard.cost?.byMode ? " prod-card__bottom--dual" : ""}`}>
+                <CostDisplay card={selectedCard} mode={mode} getCostDisplay={getCostDisplay} />
+              </div>
             </div>
-            ))}
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 }
@@ -251,11 +277,39 @@ function Stat({ label, value }) {
   );
 }
 
+function CostDisplay({ card, mode, getCostDisplay }) {
+  const cost = getCostDisplay(card);
+
+  if (cost.type === "byMode") {
+    return (
+      <div className="cost cost--dual">
+        {cost.values.map((entry) => (
+          <div className={`costMode${mode === entry.key ? " is-active" : ""}`} key={entry.key}>
+            <div className="costMode__label">
+              {entry.label}
+              {mode === entry.key ? " (Current)" : ""}
+            </div>
+            <div className="costMode__num">{entry.value}</div>
+            <div className="costMode__unit">Money</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="cost">
+      <div className="cost__num">{cost.value}</div>
+      <div className="cost__label">Money</div>
+    </div>
+  );
+}
+
 function CardMedia({ item }) {
   const [failed, setFailed] = useState(false);
 
   const API_BASE_URL = "http://localhost:8081/game";
-  const ASSET_BASE_URL = API_BASE_URL.replace(/\/game$/, ""); // http://localhost:8081
+  const ASSET_BASE_URL = API_BASE_URL.replace(/\/game$/, "");
 
   const resolveSrc = (src) => {
     if (!src) return "";
@@ -263,37 +317,22 @@ function CardMedia({ item }) {
     return `${ASSET_BASE_URL}${src}`;
   };
 
-  // image media
   if (item.type === "image") {
     const src = resolveSrc(item.src);
     if (!src) return <div className="prod-card__imgPlaceholder">Image src missing</div>;
     if (failed) return <div className="prod-card__imgPlaceholder">Image not found</div>;
-    return (
-      <img
-        className="prod-card__img"
-        src={src}
-        alt=""
-        onError={() => setFailed(true)}
-      />
-    );
+
+    return <img className="prod-card__img" src={src} alt="" onError={() => setFailed(true)} />;
   }
 
-  // qr media: if src exists, show QR as image
   if (item.type === "qr" && item.src) {
     const src = resolveSrc(item.src);
     if (!src) return <div className="prod-card__imgPlaceholder">QR src missing</div>;
     if (failed) return <div className="prod-card__imgPlaceholder">QR image not found</div>;
-    return (
-      <img
-        className="prod-card__qrImg"
-        src={src}
-        alt="QR"
-        onError={() => setFailed(true)}
-      />
-    );
+
+    return <img className="prod-card__qrImg" src={src} alt="QR" onError={() => setFailed(true)} />;
   }
 
-  // qr media: if value exists, generate QR
   if (item.type === "qr" && item.value) {
     return (
       <div className="prod-card__qrWrap">
@@ -305,31 +344,21 @@ function CardMedia({ item }) {
   return null;
 }
 
-function prettifyPlantationSize(size) {
-  if (!size) return "";
-  switch (size) {
-    case "SMALL":
-      return "Small plantations";
-    case "MEDIUM":
-      return "Medium plantations";
-    case "LARGE":
-      return "Large plantations";
-    default:
-      return size;
-  }
-}
-
 function getEffectSections(card) {
   if (!card) return [];
 
   if (card.effectsByPlantationSize) {
     return Object.entries(card.effectsByPlantationSize).map(([key, effects]) => ({
       title:
-        key === "SMALL" ? "Small plantations" :
-        key === "MEDIUM" ? "Medium plantations" :
-        key === "LARGE" ? "Large plantations" : key,
+        key === "SMALL"
+          ? "Small plantations"
+          : key === "MEDIUM"
+            ? "Medium plantations"
+            : key === "LARGE"
+              ? "Large plantations"
+              : key,
       effects: effects ?? [],
-      kind: "plantationSize"
+      kind: "plantationSize",
     }));
   }
 
@@ -337,7 +366,7 @@ function getEffectSections(card) {
     return Object.entries(card.effectsByMode).map(([key, effects]) => ({
       title: key === "ORGANIC" ? "Conversion to Organic" : "Conventional Operation",
       effects: effects ?? [],
-      kind: "mode"
+      kind: "mode",
     }));
   }
 
@@ -345,8 +374,7 @@ function getEffectSections(card) {
     {
       title: null,
       effects: card.effects ?? [],
-      kind: "default"
-    }
+      kind: "default",
+    },
   ];
 }
-
