@@ -236,6 +236,10 @@
   color: #21311e;
 }
 
+.phase-popup--compact {
+  width: min(440px, 100%);
+}
+
 .phase-popup__eyebrow {
   margin-bottom: 8px;
   font-size: 0.76rem;

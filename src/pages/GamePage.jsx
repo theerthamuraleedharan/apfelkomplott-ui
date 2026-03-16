@@ -88,6 +88,7 @@ export default function GamePage({ onRestart }) {
   const [eventVisible, setEventVisible] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(null);
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
+  const [modeChangePopup, setModeChangePopup] = useState(null);
 
   async function fetchMarketForPhase(phase, previousSlots = []) {
     const preserveSlots = phase !== "REFILL_CARDS";
@@ -120,6 +121,7 @@ export default function GamePage({ onRestart }) {
     );
     setGameState(state);
     setMarket(currentMarket);
+    return state;
   }
 
   useEffect(() => {
@@ -178,6 +180,8 @@ export default function GamePage({ onRestart }) {
   }
 
   async function handleBuyProductionCard(cardId) {
+    const previousMode = gameState?.farmingMode ?? null;
+
     // Preserve the slot position visually while the backend confirms the purchase.
     setMarket((prev) => {
       const idx = prev.findIndex((card) => card?.id === cardId);
@@ -195,7 +199,18 @@ export default function GamePage({ onRestart }) {
         alert(result.reasons.join("\n"));
       }
 
-      await refreshGame();
+      const updatedState = await refreshGame();
+
+      if (
+        previousMode &&
+        updatedState?.farmingMode &&
+        updatedState.farmingMode !== previousMode
+      ) {
+        setModeChangePopup({
+          from: previousMode,
+          to: updatedState.farmingMode,
+        });
+      }
     } catch (err) {
       alert(err.message);
       await refreshGame();
@@ -287,6 +302,36 @@ export default function GamePage({ onRestart }) {
               <button
                 className="phase-popup__button"
                 onClick={() => setCardScoringPopup(null)}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {modeChangePopup && (
+          <div
+            className="phase-popup__backdrop"
+            onClick={() => setModeChangePopup(null)}
+          >
+            <div
+              className="phase-popup phase-popup--compact"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="phase-popup__eyebrow">Production Card</div>
+              <h2 className="phase-popup__title">Farming Mode Changed</h2>
+              <div className="phase-popup__reasons">
+                <p>
+                  The selected production card changed the farming mode from{" "}
+                  <strong>{modeChangePopup.from}</strong> to{" "}
+                  <strong>{modeChangePopup.to}</strong>.
+                </p>
+              </div>
+              <button
+                className="phase-popup__button"
+                onClick={() => setModeChangePopup(null)}
               >
                 Continue
               </button>
