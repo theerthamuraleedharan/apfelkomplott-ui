@@ -57,6 +57,7 @@ export default function BoardLayout({ gameState, animationPhase }) {
           plantation={gameState.plantation}
           phase={gameState.currentPhase}
           round={gameState.currentRound}
+          lastEventResult={gameState.lastEventResult}
         />
       </div>
 

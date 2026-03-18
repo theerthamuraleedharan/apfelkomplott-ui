@@ -33,6 +33,32 @@
   color: #1f2a2e;
 }
 
+.bonusBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(83, 105, 58, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(239, 245, 226, 0.92));
+  box-shadow: 0 8px 18px rgba(59, 74, 40, 0.08);
+}
+
+.bonusBadge__label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f7e58;
+}
+
+.bonusBadge__value {
+  font-size: 14px;
+  color: #22321f;
+}
+
 .scoreRow {
   margin-top: 12px;
 }

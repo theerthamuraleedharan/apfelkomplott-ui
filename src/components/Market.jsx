@@ -1,7 +1,7 @@
 import "./Market.css";
 
-import { QRCodeCanvas } from "qrcode.react";
 import { useEffect, useState } from "react";
+import CardMedia from "./CardMedia";
 
 export default function Market({ market, mode, canBuy, onBuy }) {
   const buyHint = "Available only during the Invest phase";
@@ -118,7 +118,14 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                       {headerMedia.length > 0 && (
                         <div className="prod-card__cornerMedia">
                           {headerMedia.map((item, index) => (
-                            <CardMedia key={`${card.id}-header-${index}`} item={item} variant="corner" />
+                            <CardMedia
+                              key={`${card.id}-header-${index}`}
+                              item={item}
+                              imageClassName="prod-card__img"
+                              qrClassName="prod-card__qrImg"
+                              qrWrapClassName="prod-card__qrWrap"
+                              placeholderClassName="prod-card__imgPlaceholder"
+                            />
                           ))}
                         </div>
                       )}
@@ -131,7 +138,14 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                     {bodyMedia.length > 0 && (
                       <div className="prod-card__bodyMedia">
                         {bodyMedia.map((item, index) => (
-                          <CardMedia key={`${card.id}-body-${index}`} item={item} />
+                          <CardMedia
+                            key={`${card.id}-body-${index}`}
+                            item={item}
+                            imageClassName="prod-card__img"
+                            qrClassName="prod-card__qrImg"
+                            qrWrapClassName="prod-card__qrWrap"
+                            placeholderClassName="prod-card__imgPlaceholder"
+                          />
                         ))}
                       </div>
                     )}
@@ -224,7 +238,14 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   {getHeaderMedia(selectedCard).length > 0 && (
                     <div className="prod-card__cornerMedia">
                       {getHeaderMedia(selectedCard).map((item, index) => (
-                        <CardMedia key={`${selectedCard.id}-header-${index}`} item={item} variant="corner" />
+                        <CardMedia
+                          key={`${selectedCard.id}-header-${index}`}
+                          item={item}
+                          imageClassName="prod-card__img"
+                          qrClassName="prod-card__qrImg"
+                          qrWrapClassName="prod-card__qrWrap"
+                          placeholderClassName="prod-card__imgPlaceholder"
+                        />
                       ))}
                     </div>
                   )}
@@ -303,45 +324,6 @@ function CostDisplay({ card, mode, getCostDisplay }) {
       <div className="cost__label">Money</div>
     </div>
   );
-}
-
-function CardMedia({ item }) {
-  const [failed, setFailed] = useState(false);
-
-  const API_BASE_URL = "http://localhost:8081/game";
-  const ASSET_BASE_URL = API_BASE_URL.replace(/\/game$/, "");
-
-  const resolveSrc = (src) => {
-    if (!src) return "";
-    if (src.startsWith("http")) return src;
-    return `${ASSET_BASE_URL}${src}`;
-  };
-
-  if (item.type === "image") {
-    const src = resolveSrc(item.src);
-    if (!src) return <div className="prod-card__imgPlaceholder">Image src missing</div>;
-    if (failed) return <div className="prod-card__imgPlaceholder">Image not found</div>;
-
-    return <img className="prod-card__img" src={src} alt="" onError={() => setFailed(true)} />;
-  }
-
-  if (item.type === "qr" && item.src) {
-    const src = resolveSrc(item.src);
-    if (!src) return <div className="prod-card__imgPlaceholder">QR src missing</div>;
-    if (failed) return <div className="prod-card__imgPlaceholder">QR image not found</div>;
-
-    return <img className="prod-card__qrImg" src={src} alt="QR" onError={() => setFailed(true)} />;
-  }
-
-  if (item.type === "qr" && item.value) {
-    return (
-      <div className="prod-card__qrWrap">
-        <QRCodeCanvas value={item.value} size={120} />
-      </div>
-    );
-  }
-
-  return null;
 }
 
 function getEffectSections(card) {

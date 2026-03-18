@@ -1,6 +1,12 @@
 import { PHASE_LABELS } from "../constants/phases";
 
-export default function Controls({ phase, mode, onNextPhase, showScorePopup }) {
+export default function Controls({
+  phase,
+  mode,
+  onNextPhase,
+  showScorePopup,
+  disableNextPhase = false,
+}) {
   return (
     <div className="controlsCard">
       <div className="controlsCard__meta">
@@ -17,7 +23,7 @@ export default function Controls({ phase, mode, onNextPhase, showScorePopup }) {
 
       <button
         className="controlsCard__button"
-        disabled={showScorePopup}
+        disabled={showScorePopup || disableNextPhase}
         onClick={onNextPhase}
       >
         Next Phase

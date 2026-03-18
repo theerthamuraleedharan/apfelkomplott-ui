@@ -8,6 +8,8 @@ import {
   getActiveProductionCards,
   buyInvestment,
   buyProductionCard,
+  getEventOptions,
+  selectEventOption,
 } from "../api/gameApi";
 
 import BoardLayout from "../components/BoardLayout";
@@ -17,7 +19,7 @@ import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
 import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
-import EventCard from "../components/EventCard";
+import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
 
 function shuffleCards(cards) {
@@ -84,14 +86,78 @@ function delay(ms) {
   });
 }
 
+function normalizeEventResult(payload) {
+  if (!payload) return null;
+
+  if (payload.lastEventResult) {
+    return normalizeEventResult(payload.lastEventResult);
+  }
+
+  return {
+    ...payload,
+    cardId: payload.cardId ?? payload.id ?? null,
+    cardName: payload.cardName ?? payload.name ?? "Event",
+    description: payload.description ?? "",
+    effects: Array.isArray(payload.effects) ? payload.effects : [],
+    media: Array.isArray(payload.media) ? payload.media : [],
+  };
+}
+
+function mergeEventResults(primary, fallback) {
+  const normalizedPrimary = normalizeEventResult(primary);
+  const normalizedFallback = normalizeEventResult(fallback);
+
+  if (!normalizedPrimary) return normalizedFallback;
+  if (!normalizedFallback) return normalizedPrimary;
+
+  return {
+    ...normalizedFallback,
+    ...normalizedPrimary,
+    effects:
+      normalizedPrimary.effects.length > 0
+        ? normalizedPrimary.effects
+        : normalizedFallback.effects,
+    media:
+      normalizedPrimary.media.length > 0
+        ? normalizedPrimary.media
+        : normalizedFallback.media,
+  };
+}
+
 export default function GamePage({ onRestart }) {
   const [gameState, setGameState] = useState(null);
   const [market, setMarket] = useState([]);
   const [activeProductionCards, setActiveProductionCards] = useState([]);
-  const [eventVisible, setEventVisible] = useState(false);
+  const [eventOptions, setEventOptions] = useState([]);
+  const [eventOptionsLoading, setEventOptionsLoading] = useState(false);
+  const [eventSelectionLoading, setEventSelectionLoading] = useState(false);
+  const [eventOptionsError, setEventOptionsError] = useState("");
+  const [revealedEvent, setRevealedEvent] = useState(null);
   const [animationPhase, setAnimationPhase] = useState(null);
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
   const [modeChangePopup, setModeChangePopup] = useState(null);
+  const [errorPopup, setErrorPopup] = useState("");
+
+  function showErrorPopup(message) {
+    if (!message) return;
+    setErrorPopup(message);
+  }
+
+  async function loadEventOptions() {
+    setEventOptionsLoading(true);
+    setEventOptionsError("");
+
+    try {
+      const options = await getEventOptions();
+      setEventOptions(Array.isArray(options) ? options : []);
+    } catch (err) {
+      showErrorPopup(err.message);
+      setEventOptions([]);
+      setEventOptionsError(err.message || "Unable to load event choices.");
+    } finally {
+      setEventOptionsLoading(false);
+    }
+  }
 
   async function fetchMarketForPhase(phase, previousSlots = []) {
     const preserveSlots = phase !== "REFILL_CARDS";
@@ -141,8 +207,12 @@ export default function GamePage({ onRestart }) {
 
   useEffect(() => {
     if (gameState?.currentPhase === "DRAW_EVENT") {
-      setEventVisible(true);
+      loadEventOptions();
+      return;
     }
+
+    setEventOptions([]);
+    setEventOptionsError("");
   }, [gameState?.currentPhase]);
 
   useEffect(() => {
@@ -178,13 +248,34 @@ export default function GamePage({ onRestart }) {
     setMarket(currentMarket);
   }
 
+  async function handleEventSelection(optionIndex) {
+    setEventSelectionLoading(true);
+
+    try {
+      const selectionResult = await selectEventOption(optionIndex);
+      const updatedState = await refreshGame();
+      // Some backends return richer event data from /event/select than in /state,
+      // so we merge both and keep media/QR assets when only one payload includes them.
+      setRevealedEvent(
+        mergeEventResults(selectionResult, updatedState?.lastEventResult)
+      );
+      setEventOptions([]);
+    } catch (err) {
+      showErrorPopup(err.message);
+      await refreshGame();
+    } finally {
+      setEventSelectionLoading(false);
+    }
+  }
+
   async function buy(type) {
     try {
       await buyInvestment(type);
       const updated = await getGameState();
       setGameState(updated);
     } catch (err) {
-      alert(err.message);
+      // Backend owns investment rules, so business-rule failures show here as a user-facing popup.
+      showErrorPopup(err.message);
     }
   }
 
@@ -205,7 +296,7 @@ export default function GamePage({ onRestart }) {
       const result = await buyProductionCard(cardId);
 
       if (result?.reasons?.length) {
-        alert(result.reasons.join("\n"));
+        showErrorPopup(result.reasons.join("\n"));
       }
 
       const updatedState = await refreshGame();
@@ -221,7 +312,8 @@ export default function GamePage({ onRestart }) {
         });
       }
     } catch (err) {
-      alert(err.message);
+      // This is where backend validation like "max 8 plants" is surfaced to the player.
+      showErrorPopup(err.message);
       await refreshGame();
     }
   }
@@ -264,10 +356,21 @@ export default function GamePage({ onRestart }) {
           round={gameState.currentRound}
         />
 
-        {eventVisible && gameState.activeEvents.length > 0 && (
+        {gameState.currentPhase === "DRAW_EVENT" && (
+          <EventDrawModal
+            options={eventOptions}
+            isLoading={eventOptionsLoading}
+            isSubmitting={eventSelectionLoading}
+            error={eventOptionsError}
+            onSelect={handleEventSelection}
+            onRetry={loadEventOptions}
+          />
+        )}
+
+        {revealedEvent && (
           <EventCard
-            event={gameState.activeEvents[0]}
-            onContinue={() => setEventVisible(false)}
+            event={revealedEvent}
+            onContinue={() => setRevealedEvent(null)}
           />
         )}
 
@@ -348,6 +451,32 @@ export default function GamePage({ onRestart }) {
           </div>
         )}
 
+        {errorPopup && (
+          <div
+            className="phase-popup__backdrop"
+            onClick={() => setErrorPopup("")}
+          >
+            <div
+              className="phase-popup phase-popup--compact"
+              role="dialog"
+              aria-modal="true"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="phase-popup__eyebrow">Action Blocked</div>
+              <h2 className="phase-popup__title">Cannot complete purchase</h2>
+              <div className="phase-popup__reasons">
+                <p>{errorPopup}</p>
+              </div>
+              <button
+                className="phase-popup__button"
+                onClick={() => setErrorPopup("")}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="game-layout">
           <div className="board-col">
             <BoardLayout
@@ -371,7 +500,11 @@ export default function GamePage({ onRestart }) {
 
           <aside className="sidebar">
             <div className="panel panel--soft score-panel">
-              <ScoreBoard score={gameState.scoreTrack} money={gameState.money} />
+              <ScoreBoard
+                score={gameState.scoreTrack}
+                money={gameState.money}
+                currentSaleBonusPerApple={gameState.currentSaleBonusPerApple}
+              />
             </div>
 
             <div className="panel panel--soft">
@@ -380,6 +513,11 @@ export default function GamePage({ onRestart }) {
                 phase={gameState.currentPhase}
                 mode={gameState.farmingMode}
                 onNextPhase={handleNextPhase}
+                disableNextPhase={
+                  gameState.currentPhase === "DRAW_EVENT" ||
+                  eventSelectionLoading ||
+                  Boolean(revealedEvent)
+                }
               />
             </div>
           </aside>

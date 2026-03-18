@@ -1,4 +1,5 @@
 import "./ScoreBoard.css";
+import { formatSaleBonusPerApple } from "../utils/saleBonus";
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
@@ -12,10 +13,11 @@ function toPercent(value) {
   return ((v - MIN) / (MAX - MIN)) * 100;
 }
 
-export default function ScoreBoard({ score, money }) {
+export default function ScoreBoard({ score, money, currentSaleBonusPerApple = 0 }) {
   const economy = score?.economy ?? 0;
   const environment = score?.environment ?? 0;
   const health = score?.health ?? 0;
+  const hasSaleBonus = currentSaleBonusPerApple > 0;
 
   return (
     <div className="scoreHud">
@@ -27,6 +29,15 @@ export default function ScoreBoard({ score, money }) {
           <span className="moneyBadge__value">{money}</span>
         </div>
       </div>
+
+      {hasSaleBonus && (
+        <div className="bonusBadge" title="Ongoing sale bonus applied to future sold apples">
+          <span className="bonusBadge__label">Sale bonus</span>
+          <strong className="bonusBadge__value">
+            {formatSaleBonusPerApple(currentSaleBonusPerApple)}
+          </strong>
+        </div>
+      )}
 
       <ScoreBar label="Economy" value={economy} />
       <ScoreBar label="Environment" value={environment} />

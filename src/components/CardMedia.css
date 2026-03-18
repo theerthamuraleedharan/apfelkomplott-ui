@@ -1,0 +1,40 @@
+.card-media {
+  display: block;
+  max-width: 100%;
+}
+
+.card-media--image {
+  width: 100%;
+  border-radius: 18px;
+  object-fit: cover;
+}
+
+.card-media--qr {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+  border-radius: 18px;
+  object-fit: cover;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(35, 42, 27, 0.12);
+}
+
+.card-media--qrWrap {
+  display: inline-flex;
+  padding: 10px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(35, 42, 27, 0.12);
+}
+
+.card-media__placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px dashed rgba(83, 105, 58, 0.2);
+  color: #5c684f;
+  text-align: center;
+}

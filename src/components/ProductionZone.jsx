@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import "./ProductionZone.css";
+import { formatHarvestLossBadge, formatHarvestLossText } from "../utils/eventEffects";
 
 const fields = [1, 2, 3, 4, 5, 6];
 const sectorStartAngle = -90;
@@ -40,7 +41,7 @@ function getTreeOffsets(index) {
   return positions[index] ?? { x: 0, y: 0 };
 }
 
-export default function ProductionZone({ plantation, phase, round }) {
+export default function ProductionZone({ plantation, phase, round, lastEventResult }) {
   const previousPlantationRef = useRef(null);
   const previousPhaseRef = useRef(null);
   const rotateSnapshotRef = useRef(null);
@@ -64,6 +65,8 @@ export default function ProductionZone({ plantation, phase, round }) {
       ? Math.max(completedRotations - 1, 0) % 6
       : rotationSteps;
   const rotationDegrees = completedRotations * 60;
+  const harvestLossBadge = formatHarvestLossBadge(lastEventResult);
+  const harvestLossText = formatHarvestLossText(lastEventResult);
   const visiblePlantation =
     phase === "ROTATE"
       ? {
@@ -86,6 +89,12 @@ export default function ProductionZone({ plantation, phase, round }) {
           <h3>Production Disk</h3>
           <p>Fields 3-6 produce apples. Trees age by one field every rotation.</p>
         </div>
+        {harvestLossBadge && (
+          <div className="production-warning" title={harvestLossText}>
+            <span className="production-warning__label">Weather Effect</span>
+            <strong>{harvestLossBadge}</strong>
+          </div>
+        )}
       </div>
 
       <div className="production-disk-layout">
@@ -137,17 +146,17 @@ export default function ProductionZone({ plantation, phase, round }) {
                           transform: `translate(${getTreeOffsets(index).x}px, ${getTreeOffsets(index).y}px)`,
                         }}
                       >
-                      <span
-                        className={
-                          tree.fieldPosition >= 3 ? "tree mature" : "tree young"
-                        }
-                      >
-                        {tree.type === "SEEDLING" ? "🌱" : "🌳"}
-                      </span>
+                        <span
+                          className={
+                            tree.fieldPosition >= 3 ? "tree mature" : "tree young"
+                          }
+                        >
+                          {tree.type === "SEEDLING" ? "🌱" : "🌳"}
+                        </span>
 
-                      {phase === "HARVEST" && tree.fieldPosition >= 3 && (
-                        <span className="harvest-apple">🍎</span>
-                      )}
+                        {phase === "HARVEST" && tree.fieldPosition >= 3 && (
+                          <span className="harvest-apple">🍎</span>
+                        )}
                       </div>
                     ))}
 

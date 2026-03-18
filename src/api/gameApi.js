@@ -30,6 +30,32 @@ export async function nextPhase() {
   return await res.json();
 }
 
+export async function getEventOptions() {
+  const res = await fetch(`${BASE_URL}/event/options`);
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+
+export async function selectEventOption(optionIndex) {
+  const res = await fetch(`${BASE_URL}/event/select`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ optionIndex }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
+  }
+
+  return await res.json();
+}
+
 /* ---------- MARKET ---------- */
 
 export async function getMarket() {
