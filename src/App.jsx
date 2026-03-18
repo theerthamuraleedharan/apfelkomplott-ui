@@ -1,52 +1,43 @@
 import { useState } from "react";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import GamePage from "./pages/GamePage";
 import StartScreen from "./pages/StartScreen";
 import ModeSelection from "./pages/ModeSelection";
-
-import { startGame as apiStartGame } from "./api/gameApi"; // ✅ add this
+import { startGame as apiStartGame } from "./api/gameApi";
 
 function App() {
-  const [screen, setScreen] = useState("START");
+  const navigate = useNavigate();
   const [gameMode, setGameMode] = useState(null);
 
   const startGame = async (mode) => {
     try {
-      await fetch(`http://localhost:8081/game/start?mode=${mode}`, {
-        method: "POST"
-      });
-
+      await apiStartGame(mode);
       setGameMode(mode);
-      setScreen("GAME");
+      navigate("/game");
     } catch (error) {
       console.error("Error starting game:", error);
     }
   };
 
   const handleRestart = () => {
-    setGameMode(null);     // reset mode
-    setScreen("START");    // go back to landing
+    setGameMode(null);
+    navigate("/");
   };
 
-  if (screen === "START") {
-    return <StartScreen onPlay={() => setScreen("MODE")} />;
-  }
-
-  if (screen === "MODE") {
-    return (
-      <ModeSelection
-        onSelect={startGame}
-        onBack={() => setScreen("START")}
-      />
-    );
-  }
-
   return (
-    <GamePage
-      gameMode={gameMode}
-      onRestart={handleRestart}   // 👈 pass restart
-    />
+    <Routes>
+      <Route path="/" element={<StartScreen onPlay={() => navigate("/mode")} />} />
+      <Route
+        path="/mode"
+        element={<ModeSelection onSelect={startGame} onBack={() => navigate(-1)} />}
+      />
+      <Route
+        path="/game"
+        element={<GamePage gameMode={gameMode} onRestart={handleRestart} />}
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
-
 
 export default App;
