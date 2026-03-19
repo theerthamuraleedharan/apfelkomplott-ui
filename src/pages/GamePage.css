@@ -87,6 +87,12 @@
   background: rgba(255, 255, 255, 0.68);
   border: 1px solid rgba(83, 105, 58, 0.12);
   box-shadow: 0 10px 24px rgba(59, 74, 40, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.hero-chip--phase {
+  border-color: rgba(83, 105, 58, 0.2);
+  box-shadow: 0 14px 28px rgba(59, 74, 40, 0.12);
 }
 
 .hero-chip strong {
@@ -135,6 +141,7 @@
     0 16px 36px rgba(59, 74, 40, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(10px);
+  transition: box-shadow 220ms ease, transform 220ms ease;
 }
 
 .panel__eyebrow {
@@ -314,6 +321,22 @@
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 14px 28px rgba(48, 76, 44, 0.24);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.phase-popup__button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(48, 76, 44, 0.28);
+  filter: brightness(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chip,
+  .panel--soft,
+  .controlsCard__button,
+  .phase-popup__button {
+    transition: none;
+  }
 }
 
 @media (max-width: 1080px) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import "./GamePage.css";
 
 import {
@@ -21,6 +22,7 @@ import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
+import AnimatedModal from "../components/AnimatedModal";
 
 function shuffleCards(cards) {
   const copy = [...cards];
@@ -125,6 +127,7 @@ function mergeEventResults(primary, fallback) {
 }
 
 export default function GamePage({ onRestart }) {
+  const reduceMotion = useReducedMotion();
   const [gameState, setGameState] = useState(null);
   const [market, setMarket] = useState([]);
   const [activeProductionCards, setActiveProductionCards] = useState([]);
@@ -325,7 +328,13 @@ export default function GamePage({ onRestart }) {
       <div className="game-shell">
         <GameOverModal gameState={gameState} onRestart={onRestart} />
 
-        <header className="game-hero">
+        <motion.header
+          className="game-hero"
+          key={`hero-${gameState.currentPhase}-${gameState.currentRound}`}
+          initial={reduceMotion ? false : { opacity: 0.92, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
+        >
           <div className="game-hero__copy">
             <p className="game-kicker">Orchard Strategy Board</p>
             <h1 className="game-title">Apfelkomplott</h1>
@@ -336,25 +345,44 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <div className="game-hero__meta">
-            <div className="hero-chip">
+            <motion.div
+              className="hero-chip"
+              animate={
+                reduceMotion ? undefined : gameState.currentPhase ? { scale: [1, 1.02, 1] } : undefined
+              }
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
               <span className="hero-chip__label">Mode</span>
               <strong>{gameState.farmingMode}</strong>
-            </div>
-            <div className="hero-chip">
+            </motion.div>
+            <motion.div className="hero-chip" layout>
               <span className="hero-chip__label">Round</span>
               <strong>{gameState.currentRound}</strong>
-            </div>
-            <div className="hero-chip">
+            </motion.div>
+            <motion.div
+              className="hero-chip hero-chip--phase"
+              key={gameState.currentPhase}
+              initial={reduceMotion ? false : { opacity: 0.6, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+            >
               <span className="hero-chip__label">Phase</span>
               <strong>{gameState.currentPhase.replaceAll("_", " ")}</strong>
-            </div>
+            </motion.div>
           </div>
-        </header>
+        </motion.header>
 
-        <PhaseProgressBar
-          currentPhase={gameState.currentPhase}
-          round={gameState.currentRound}
-        />
+        <motion.div
+          key={`phase-bar-${gameState.currentPhase}`}
+          initial={reduceMotion ? false : { opacity: 0.8, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+        >
+          <PhaseProgressBar
+            currentPhase={gameState.currentPhase}
+            round={gameState.currentRound}
+          />
+        </motion.div>
 
         {gameState.currentPhase === "DRAW_EVENT" && (
           <EventDrawModal
@@ -374,17 +402,14 @@ export default function GamePage({ onRestart }) {
           />
         )}
 
-        {cardScoringPopup && (
-          <div
-            className="phase-popup__backdrop"
-            onClick={() => setCardScoringPopup(null)}
-          >
-            <div
-              className="phase-popup"
-              role="dialog"
-              aria-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <AnimatedModal
+          isOpen={Boolean(cardScoringPopup)}
+          onClose={() => setCardScoringPopup(null)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          {cardScoringPopup && (
+            <>
               <div className="phase-popup__eyebrow">Card Scoring</div>
               <h2 className="phase-popup__title">Production Card Results</h2>
 
@@ -417,21 +442,18 @@ export default function GamePage({ onRestart }) {
               >
                 Continue
               </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </AnimatedModal>
 
-        {modeChangePopup && (
-          <div
-            className="phase-popup__backdrop"
-            onClick={() => setModeChangePopup(null)}
-          >
-            <div
-              className="phase-popup phase-popup--compact"
-              role="dialog"
-              aria-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <AnimatedModal
+          isOpen={Boolean(modeChangePopup)}
+          onClose={() => setModeChangePopup(null)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup phase-popup--compact"
+        >
+          {modeChangePopup && (
+            <>
               <div className="phase-popup__eyebrow">Production Card</div>
               <h2 className="phase-popup__title">Farming Mode Changed</h2>
               <div className="phase-popup__reasons">
@@ -447,21 +469,18 @@ export default function GamePage({ onRestart }) {
               >
                 Continue
               </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </AnimatedModal>
 
-        {errorPopup && (
-          <div
-            className="phase-popup__backdrop"
-            onClick={() => setErrorPopup("")}
-          >
-            <div
-              className="phase-popup phase-popup--compact"
-              role="dialog"
-              aria-modal="true"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <AnimatedModal
+          isOpen={Boolean(errorPopup)}
+          onClose={() => setErrorPopup("")}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup phase-popup--compact"
+        >
+          {errorPopup && (
+            <>
               <div className="phase-popup__eyebrow">Action Blocked</div>
               <h2 className="phase-popup__title">Cannot complete purchase</h2>
               <div className="phase-popup__reasons">
@@ -473,9 +492,9 @@ export default function GamePage({ onRestart }) {
               >
                 Close
               </button>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </AnimatedModal>
 
         <div className="game-layout">
           <div className="board-col">
@@ -499,15 +518,35 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <aside className="sidebar">
-            <div className="panel panel--soft score-panel">
+            <motion.div
+              className="panel panel--soft score-panel"
+              initial={reduceMotion ? false : { opacity: 0.9, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+            >
               <ScoreBoard
                 score={gameState.scoreTrack}
                 money={gameState.money}
                 currentSaleBonusPerApple={gameState.currentSaleBonusPerApple}
+                waterManagementPenalty={
+                  gameState.productionCardCostModifiers?.LT_WATER_MANAGEMENT_31 ||
+                  gameState.productionCardCostModifiers?.LT_WATER_MANAGEMENT_PRIVATE_WELL_32 ||
+                  gameState.productionCardCostModifiers?.LT_WATER_MANAGEMENT_ECO_35 ||
+                  0
+                }
+                shadeNetsPenalty={
+                  gameState.productionCardCostModifiers?.ST_USE_SHADE_NETS ?? 0
+                }
               />
-            </div>
+            </motion.div>
 
-            <div className="panel panel--soft">
+            <motion.div
+              className="panel panel--soft"
+              key={`controls-${gameState.currentPhase}`}
+              initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
+            >
               <div className="panel__eyebrow">Turn Controls</div>
               <Controls
                 phase={gameState.currentPhase}
@@ -519,7 +558,7 @@ export default function GamePage({ onRestart }) {
                   Boolean(revealedEvent)
                 }
               />
-            </div>
+            </motion.div>
           </aside>
         </div>
 

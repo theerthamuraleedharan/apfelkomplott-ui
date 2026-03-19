@@ -74,7 +74,6 @@
   border: 1px solid rgba(83, 105, 58, 0.14);
   box-shadow: 0 24px 50px rgba(0, 0, 0, 0.22);
   text-align: center;
-  animation: boardModalIn 180ms ease-out;
 }
 
 .sell-modal h2,
@@ -172,18 +171,19 @@
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 14px 28px rgba(48, 76, 44, 0.24);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
-@keyframes boardModalIn {
-  from {
-    transform: translateY(10px) scale(0.96);
-    opacity: 0;
-  }
+.sell-modal button:hover,
+.score-modal button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(48, 76, 44, 0.28);
+  filter: brightness(1.02);
+}
 
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
+.sell-modal__total {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 @media (max-width: 900px) {

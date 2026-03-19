@@ -1,6 +1,9 @@
+import { motion, useReducedMotion } from "framer-motion";
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";
 import ProductionZone from "./ProductionZone";
+import AnimatedModal from "./AnimatedModal";
+import AnimatedNumber from "./AnimatedNumber";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +13,7 @@ export default function BoardLayout({ gameState, animationPhase }) {
   const [showSellPopup, setShowSellPopup] = useState(false);
   const [showScorePopup, setShowScorePopup] = useState(false);
   const lastShownScoreRef = useRef(null);
+  const reduceMotion = useReducedMotion();
 
   const scoringResult = gameState.lastScoreResult;
 
@@ -44,30 +48,54 @@ export default function BoardLayout({ gameState, animationPhase }) {
 
   return (
     <div className="board-grid">
-      <div className="zone transport">
+      <motion.div
+        className="zone transport"
+        key={`transport-${gameState.currentPhase}`}
+        initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+      >
         <TransportZone plantation={gameState.plantation} />
-      </div>
+      </motion.div>
 
-      <div className="zone sales">
+      <motion.div
+        className="zone sales"
+        key={`sales-${gameState.currentPhase}`}
+        initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+      >
         <SalesZone plantation={gameState.plantation} />
-      </div>
+      </motion.div>
 
-      <div className="zone production">
+      <motion.div
+        className="zone production"
+        key={`production-${gameState.currentPhase}`}
+        initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
+      >
         <ProductionZone
           plantation={gameState.plantation}
           phase={gameState.currentPhase}
           round={gameState.currentRound}
           lastEventResult={gameState.lastEventResult}
         />
-      </div>
+      </motion.div>
 
-      {showSellPopup && gameState.lastSellResult && (
-        <div className="sell-overlay">
-          <div className="sell-modal">
+      <AnimatedModal
+        isOpen={showSellPopup && Boolean(gameState.lastSellResult)}
+        onClose={() => setShowSellPopup(false)}
+        backdropClassName="sell-overlay"
+        panelClassName="sell-modal"
+      >
+        {gameState.lastSellResult && (
+          <>
             <h2>Sell Summary</h2>
 
             <p>
-              <strong>Apples sold:</strong> {gameState.lastSellResult.applesSold}
+              <strong>Apples sold:</strong>{" "}
+              <AnimatedNumber value={gameState.lastSellResult.applesSold} />
             </p>
             <p>
               <strong>Base price:</strong> 1
@@ -78,33 +106,45 @@ export default function BoardLayout({ gameState, animationPhase }) {
 
             <hr />
 
-            <p style={{ fontSize: "18px", fontWeight: "bold" }}>
-              Total earned: {gameState.lastSellResult.moneyEarned}
+            <p className="sell-modal__total">
+              Total earned:{" "}
+              <AnimatedNumber value={gameState.lastSellResult.moneyEarned} />
             </p>
 
             <button onClick={() => setShowSellPopup(false)}>Close</button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </AnimatedModal>
 
-      {showScorePopup && scoringResult && (
-        <div className="score-overlay">
-          <div className="score-modal">
+      <AnimatedModal
+        isOpen={showScorePopup && Boolean(scoringResult)}
+        onClose={() => setShowScorePopup(false)}
+        backdropClassName="score-overlay"
+        panelClassName="score-modal"
+      >
+        {scoringResult && (
+          <>
             <div className="score-modal__eyebrow">Round Summary</div>
             <h2>Round Scoring</h2>
 
             <div className="score-modal__stats">
               <div className="score-modal__stat">
                 <span>Economy</span>
-                <strong>{scoringResult.economyChange}</strong>
+                <strong>
+                  <AnimatedNumber value={scoringResult.economyChange} />
+                </strong>
               </div>
               <div className="score-modal__stat">
                 <span>Environment</span>
-                <strong>{scoringResult.environmentChange}</strong>
+                <strong>
+                  <AnimatedNumber value={scoringResult.environmentChange} />
+                </strong>
               </div>
               <div className="score-modal__stat">
                 <span>Health</span>
-                <strong>{scoringResult.healthChange}</strong>
+                <strong>
+                  <AnimatedNumber value={scoringResult.healthChange} />
+                </strong>
               </div>
             </div>
 
@@ -119,9 +159,9 @@ export default function BoardLayout({ gameState, animationPhase }) {
             <button className="score-modal__button" onClick={() => setShowScorePopup(false)}>
               Continue
             </button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </AnimatedModal>
     </div>
   );
 }

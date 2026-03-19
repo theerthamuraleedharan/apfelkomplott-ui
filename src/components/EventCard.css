@@ -143,7 +143,8 @@
   color: #fffdf6;
   box-shadow: 0 20px 40px rgba(35, 42, 27, 0.22);
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+  will-change: transform;
 }
 
 .event-draw__card:hover:not(:disabled) {
@@ -193,10 +194,12 @@
   color: #fffdf6;
   font-weight: 700;
   cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
 .event-popup__button:hover {
   background: #24391f;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {

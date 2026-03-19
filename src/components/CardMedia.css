@@ -10,10 +10,7 @@
 }
 
 .card-media--qr {
-  width: 140px;
-  height: 140px;
   margin: 0 auto;
-  border-radius: 18px;
   object-fit: cover;
   background: #fff;
   box-shadow: 0 10px 24px rgba(35, 42, 27, 0.12);

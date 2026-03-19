@@ -345,11 +345,15 @@ function getEffectSections(card) {
   }
 
   if (card.effectsByMode) {
-    return Object.entries(card.effectsByMode).map(([key, effects]) => ({
-      title: key === "ORGANIC" ? "Conversion to Organic" : "Conventional Operation",
-      effects: effects ?? [],
-      kind: "mode",
-    }));
+    const orderedModes = ["ORGANIC", "CONVENTIONAL"];
+
+    return orderedModes
+      .filter((key) => card.effectsByMode[key])
+      .map((key) => ({
+        title: key === "ORGANIC" ? "Organic Farming" : "Conventional Farming",
+        effects: card.effectsByMode[key] ?? [],
+        kind: "mode",
+      }));
   }
 
   return [
