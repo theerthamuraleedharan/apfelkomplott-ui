@@ -2,7 +2,7 @@
 
 Frontend for the **Apfelkomplott** digital board game prototype. This project is part of a master thesis and implements the browser-based user interface for an orchard management game with strategy, scoring, market cards, and phase-based gameplay.
 
-The application is built with **React + Vite** and connects to a **Java Spring Boot** backend running locally.
+The application is built with **React + Vite** and connects to a **Java Spring Boot** backend.
 
 ## Overview
 
@@ -56,16 +56,18 @@ Before running the frontend, make sure you have:
 - npm installed
 - The Spring Boot backend running locally on `http://localhost:8081`
 
-This frontend currently expects the backend API at:
+This frontend expects the backend base URL through `VITE_API_BASE_URL`.
+
+For local development:
 
 ```text
-http://localhost:8081/game
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
-and static/media assets from:
+For production builds:
 
 ```text
-http://localhost:8081
+VITE_API_BASE_URL=https://apfelkomplott-backend.onrender.com
 ```
 
 ## Installation
@@ -123,12 +125,13 @@ Implemented API interactions include:
 
 - This project uses local component state for screen transitions between landing, mode selection, and game screens.
 - It does not currently use React Router.
-- Several API URLs are hardcoded to `localhost:8081`.
+- The frontend now reads the backend base URL from `VITE_API_BASE_URL`.
+- Local development uses `.env.development` with `http://localhost:8081`.
+- Production builds use `.env.production` with `https://apfelkomplott-backend.onrender.com`.
 - The UI is designed for a thesis/demo workflow and can be extended further for production-style routing, environment configuration, and deployment.
 
 ## Suggested Next Improvements
 
-- Move API base URLs to environment variables
 - Add React Router for real browser navigation
 - Improve error handling and loading states
 - Add tests for key components and flows
