@@ -8,14 +8,19 @@ import { startGame as apiStartGame } from "./api/gameApi";
 function App() {
   const navigate = useNavigate();
   const [gameMode, setGameMode] = useState(null);
+  const [isStartingGame, setIsStartingGame] = useState(false);
 
   const startGame = async (mode) => {
+    setIsStartingGame(true);
+
     try {
       await apiStartGame(mode);
       setGameMode(mode);
       navigate("/game");
     } catch (error) {
       console.error("Error starting game:", error);
+    } finally {
+      setIsStartingGame(false);
     }
   };
 
@@ -29,7 +34,13 @@ function App() {
       <Route path="/" element={<StartScreen onPlay={() => navigate("/mode")} />} />
       <Route
         path="/mode"
-        element={<ModeSelection onSelect={startGame} onBack={() => navigate(-1)} />}
+        element={
+          <ModeSelection
+            onSelect={startGame}
+            onBack={() => navigate(-1)}
+            isLoading={isStartingGame}
+          />
+        }
       />
       <Route
         path="/game"

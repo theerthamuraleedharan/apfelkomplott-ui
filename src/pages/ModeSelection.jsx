@@ -30,12 +30,19 @@ const modeCards = [
   },
 ];
 
-export default function ModeSelection({ onSelect, onBack }) {
+export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
   return (
     <div className="mode-page">
       <div className="mode-page__backdrop" />
 
-      <button className="mode-page__back" onClick={onBack}>
+      {isLoading && (
+        <div className="mode-page__loadingOverlay" role="status" aria-live="polite">
+          <div className="mode-page__spinner" aria-hidden="true" />
+          <p className="mode-page__loadingText">Loading your orchard...</p>
+        </div>
+      )}
+
+      <button className="mode-page__back" onClick={onBack} disabled={isLoading}>
         Back
       </button>
 
@@ -61,11 +68,12 @@ export default function ModeSelection({ onSelect, onBack }) {
             type="button"
             className={mode.className}
             onClick={() => onSelect(mode.id)}
+            disabled={isLoading}
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + index * 0.12, duration: 0.55 }}
             whileHover={{ y: -6 }}
-            whileTap={{ scale: 0.985 }}
+            whileTap={isLoading ? undefined : { scale: 0.985 }}
           >
             <div className="mode-card__eyebrow">{mode.eyebrow}</div>
             <h2 className="mode-card__title">{mode.title}</h2>
