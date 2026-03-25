@@ -29,9 +29,39 @@
 
 .mode-page__back,
 .mode-page__hero,
-.mode-grid {
+.mode-grid,
+.mode-page__loadingOverlay {
   position: relative;
   z-index: 1;
+}
+
+.mode-page__loadingOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  gap: 16px;
+  background: rgba(242, 235, 215, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.mode-page__spinner {
+  width: 68px;
+  height: 68px;
+  border: 6px solid rgba(70, 98, 52, 0.18);
+  border-top-color: #466234;
+  border-radius: 50%;
+  animation: mode-page-spin 0.85s linear infinite;
+  box-shadow: 0 18px 32px rgba(44, 55, 30, 0.14);
+}
+
+.mode-page__loadingText {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #2d3a22;
 }
 
 .mode-page__back {
@@ -42,6 +72,11 @@
   background: rgba(255, 252, 246, 0.34);
   color: var(--ink);
   backdrop-filter: blur(10px);
+}
+
+.mode-page__back:disabled,
+.mode-card:disabled {
+  cursor: wait;
 }
 
 .mode-page__back:hover {
@@ -101,6 +136,10 @@
   backdrop-filter: blur(14px);
   cursor: pointer;
   color: var(--ink);
+}
+
+.mode-card:disabled {
+  opacity: 0.8;
 }
 
 .mode-card--conventional {
@@ -186,6 +225,12 @@
   content: ">";
 }
 
+@keyframes mode-page-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 900px) {
   .mode-grid {
     grid-template-columns: 1fr;
@@ -201,6 +246,11 @@
     padding: 78px 16px 28px;
   }
 
+  .mode-page__spinner {
+    width: 58px;
+    height: 58px;
+  }
+
   .mode-page__back {
     left: 16px;
     top: 20px;
@@ -208,5 +258,11 @@
 
   .mode-card {
     padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-page__spinner {
+    animation-duration: 1.8s;
   }
 }
