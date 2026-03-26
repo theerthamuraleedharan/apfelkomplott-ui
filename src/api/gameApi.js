@@ -27,6 +27,20 @@ export async function startGame(mode) {
   return await res.json();
 }
 
+async function parseJsonResponse(res, fallbackMessage) {
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || fallbackMessage);
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(fallbackMessage);
+  }
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
 
 export async function getGameState() {
   const res = await fetch(`${BASE_URL}/state`);
@@ -55,6 +69,16 @@ export async function getEventOptions() {
 
   const text = await res.text();
   return text ? JSON.parse(text) : null;
+}
+
+export async function fetchGameGuide() {
+  const res = await fetch(`${BASE_URL}/help`);
+  return await parseJsonResponse(res, "Unable to load the game guide.");
+}
+
+export async function fetchCurrentPhaseHelp() {
+  const res = await fetch(`${BASE_URL}/help/current-phase`);
+  return await parseJsonResponse(res, "Unable to load help for the current phase.");
 }
 
 export async function selectEventOption(optionIndex) {
