@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import "./GamePage.css";
 
 import {
+  fetchGameGuide,
   getGameState,
   nextPhase,
   getMarket,
@@ -23,6 +24,10 @@ import GameOverModal from "../components/GameOverModal";
 import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
 import AnimatedModal from "../components/AnimatedModal";
+import GameHelpModal from "../components/GameHelpModal";
+import HelpButton from "../components/HelpButton";
+
+const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
 function shuffleCards(cards) {
   const copy = [...cards];
@@ -126,6 +131,26 @@ function mergeEventResults(primary, fallback) {
   };
 }
 
+function getHelpModalPreference() {
+  try {
+    return localStorage.getItem(HELP_DISMISSED_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setHelpModalPreference() {
+  try {
+    localStorage.setItem(HELP_DISMISSED_STORAGE_KEY, "1");
+  } catch {
+    // Ignore storage errors so help still works in restricted environments.
+  }
+}
+
+function toText(value, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
 export default function GamePage({ onRestart }) {
   const reduceMotion = useReducedMotion();
   const [gameState, setGameState] = useState(null);
@@ -140,10 +165,44 @@ export default function GamePage({ onRestart }) {
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
   const [modeChangePopup, setModeChangePopup] = useState(null);
   const [errorPopup, setErrorPopup] = useState("");
+  const [guide, setGuide] = useState(null);
+  const [guideLoading, setGuideLoading] = useState(false);
+  const [guideError, setGuideError] = useState("");
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
+  const hasCheckedWelcomeHelpRef = useRef(false);
 
   function showErrorPopup(message) {
     if (!message) return;
     setErrorPopup(message);
+  }
+
+  function openGuideModal() {
+    setIsWelcomeHelp(false);
+    setIsHelpModalOpen(true);
+  }
+
+  function closeGuideModal() {
+    if (isWelcomeHelp) {
+      setHelpModalPreference();
+      setIsWelcomeHelp(false);
+    }
+
+    setIsHelpModalOpen(false);
+  }
+
+  async function loadGuide() {
+    setGuideLoading(true);
+    setGuideError("");
+
+    try {
+      const nextGuide = await fetchGameGuide();
+      setGuide(nextGuide);
+    } catch (err) {
+      setGuideError(err.message || "Unable to load the game guide.");
+    } finally {
+      setGuideLoading(false);
+    }
   }
 
   async function loadEventOptions() {
@@ -209,6 +268,10 @@ export default function GamePage({ onRestart }) {
   }, []);
 
   useEffect(() => {
+    loadGuide();
+  }, []);
+
+  useEffect(() => {
     if (gameState?.currentPhase === "DRAW_EVENT") {
       loadEventOptions();
       return;
@@ -235,6 +298,17 @@ export default function GamePage({ onRestart }) {
       return () => clearTimeout(timer);
     }
   }, [gameState?.currentPhase]);
+
+  useEffect(() => {
+    if (!gameState || hasCheckedWelcomeHelpRef.current) return;
+
+    hasCheckedWelcomeHelpRef.current = true;
+
+    if (!getHelpModalPreference()) {
+      setIsWelcomeHelp(true);
+      setIsHelpModalOpen(true);
+    }
+  }, [gameState]);
 
   async function handleNextPhase() {
     const updated = await nextPhase();
@@ -368,6 +442,9 @@ export default function GamePage({ onRestart }) {
             >
               <span className="hero-chip__label">Phase</span>
               <strong>{gameState.currentPhase.replaceAll("_", " ")}</strong>
+            </motion.div>
+            <motion.div className="hero-chip game-help-chip" layout>
+              <HelpButton onClick={openGuideModal} />
             </motion.div>
           </div>
         </motion.header>
@@ -550,7 +627,6 @@ export default function GamePage({ onRestart }) {
               <div className="panel__eyebrow">Turn Controls</div>
               <Controls
                 phase={gameState.currentPhase}
-                mode={gameState.farmingMode}
                 onNextPhase={handleNextPhase}
                 disableNextPhase={
                   gameState.currentPhase === "DRAW_EVENT" ||
@@ -577,6 +653,17 @@ export default function GamePage({ onRestart }) {
             onBuy={handleBuyProductionCard}
           />
         </div>
+
+        <GameHelpModal
+          isOpen={isHelpModalOpen}
+          guide={guide}
+          isLoading={guideLoading}
+          error={guideError}
+          onClose={closeGuideModal}
+          onRetry={loadGuide}
+          currentPhase={gameState.currentPhase}
+          isWelcome={isWelcomeHelp}
+        />
       </div>
     </div>
   );

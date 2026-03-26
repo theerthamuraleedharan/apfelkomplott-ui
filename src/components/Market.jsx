@@ -3,9 +3,16 @@ import "./Market.css";
 import { useEffect, useState } from "react";
 import CardMedia from "./CardMedia";
 
+const PRODUCTION_CARD_HELP_POINTS = [
+  "Production cards are investment cards that change how your orchard performs over one or more years.",
+  "Short-term cards usually affect the near future, while long-term cards shape your strategy over a longer stretch of the game.",
+  "Open a card before buying it to review its years, score effects, and cost for your current farming mode.",
+];
+
 export default function Market({ market, mode, canBuy, onBuy }) {
   const buyHint = "Available only during the Invest phase";
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -79,13 +86,34 @@ export default function Market({ market, mode, canBuy, onBuy }) {
       <div className="market__header">
         <div>
           <div className="market__eyebrow">Investment Market</div>
-          <h3 className="market__title">Production Cards</h3>
+          <div className="market__titleRow">
+            <h3 className="market__title">Production Cards</h3>
+            <button
+              type="button"
+              className="market__infoButton"
+              onClick={() => setIsHelpOpen((open) => !open)}
+              aria-expanded={isHelpOpen}
+              aria-controls="production-card-help"
+              title="What are production cards?"
+            >
+              i
+            </button>
+          </div>
         </div>
         <div className="market__metaWrap">
           <div className="market__meta">5 market slots</div>
           {mode ? <div className="market__meta market__meta--accent">Mode: {mode}</div> : null}
         </div>
       </div>
+
+      {isHelpOpen && (
+        <div className="market__help" id="production-card-help">
+          <div className="market__helpTitle">What are production cards?</div>
+          {PRODUCTION_CARD_HELP_POINTS.map((point) => (
+            <p key={point}>{point}</p>
+          ))}
+        </div>
+      )}
 
       <div className="market__grid market__grid--fixed">
         {Array.from({ length: 5 }).map((_, idx) => {

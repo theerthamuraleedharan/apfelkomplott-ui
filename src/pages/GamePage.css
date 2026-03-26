@@ -8,9 +8,9 @@
 }
 
 .game-shell {
-  width: min(1420px, 94vw);
+  width: min(1360px, 94vw);
   margin: 0 auto;
-  padding: 28px 0 42px;
+  padding: 22px 0 36px;
 }
 
 .game-loading {
@@ -26,15 +26,15 @@
 .game-hero {
   display: flex;
   justify-content: space-between;
-  gap: 28px;
-  padding: 28px 30px;
-  border-radius: 30px;
+  align-items: flex-start;
+  gap: 22px;
+  padding: 24px 26px;
+  border-radius: 24px;
   background:
+    radial-gradient(circle at right center, rgba(205, 221, 178, 0.3), transparent 34%),
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.82), transparent 18%),
     linear-gradient(135deg, rgba(255, 250, 235, 0.96), rgba(237, 244, 223, 0.94)),
-    url("/cards/longTermProductionCard.png");
-  background-repeat: no-repeat;
-  background-position: right -40px bottom -20px;
-  background-size: 280px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
   border: 1px solid rgba(83, 105, 58, 0.12);
   box-shadow:
     0 24px 60px rgba(59, 74, 40, 0.12),
@@ -42,12 +42,12 @@
 }
 
 .game-hero__copy {
-  max-width: 700px;
+  max-width: 640px;
 }
 
 .game-kicker {
   margin: 0 0 10px;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -56,37 +56,38 @@
 
 .game-title {
   margin: 0;
-  font-size: clamp(2.5rem, 5vw, 4.4rem);
-  line-height: 0.95;
+  font-size: clamp(2.3rem, 4.6vw, 3.9rem);
+  line-height: 0.98;
   letter-spacing: -0.04em;
   color: #21311e;
 }
 
 .game-subtitle {
-  margin: 14px 0 0;
-  max-width: 62ch;
-  font-size: 1rem;
-  line-height: 1.65;
+  margin: 12px 0 0;
+  max-width: 56ch;
+  font-size: 0.98rem;
+  line-height: 1.58;
   color: rgba(32, 49, 31, 0.74);
 }
 
 .game-hero__meta {
   display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(110px, max-content));
   gap: 12px;
-  min-width: min(100%, 460px);
+  justify-content: end;
+  min-width: 0;
   align-self: start;
 }
 
 .hero-chip {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.68);
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
   border: 1px solid rgba(83, 105, 58, 0.12);
-  box-shadow: 0 10px 24px rgba(59, 74, 40, 0.08);
+  box-shadow: 0 8px 20px rgba(59, 74, 40, 0.07);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
@@ -96,7 +97,7 @@
 }
 
 .hero-chip strong {
-  font-size: 1rem;
+  font-size: 0.98rem;
   color: #22321f;
 }
 
@@ -108,10 +109,30 @@
   color: #6f7e58;
 }
 
+.game-help-chip {
+  display: flex;
+  align-items: stretch;
+  align-self: start;
+  padding: 0;
+  overflow: hidden;
+}
+
+.game-help-chip .help-button {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  justify-content: flex-start;
+}
+
 .game-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -126,19 +147,19 @@
   top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .panel {
-  padding: 18px;
-  border-radius: 24px;
+  padding: 16px;
+  border-radius: 20px;
 }
 
 .panel--soft {
-  background: rgba(255, 252, 244, 0.88);
+  background: rgba(255, 252, 244, 0.9);
   border: 1px solid rgba(83, 105, 58, 0.12);
   box-shadow:
-    0 16px 36px rgba(59, 74, 40, 0.1),
+    0 12px 28px rgba(59, 74, 40, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(10px);
   transition: box-shadow 220ms ease, transform 220ms ease;
@@ -158,50 +179,35 @@
 }
 
 .full-width {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .controlsCard {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
-.controlsCard__meta {
-  display: grid;
-  gap: 10px;
-}
-
-.controlsCard__item {
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(83, 105, 58, 0.1);
-}
-
-.controlsCard__label {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #6f7e58;
-}
-
-.controlsCard__value {
+.controlsCard__headline {
+  font-size: 1rem;
   font-weight: 800;
   color: #22321f;
 }
 
+.controlsCard__hint {
+  margin: 0;
+  color: rgba(33, 49, 30, 0.75);
+  line-height: 1.55;
+}
+
 .controlsCard__button {
   width: 100%;
-  padding: 14px 18px;
+  padding: 13px 18px;
   border: none;
-  border-radius: 18px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #3f6137 0%, #304c2c 100%);
   color: #fffef6;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 800;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -342,12 +348,12 @@
 @media (max-width: 1080px) {
   .game-hero {
     flex-direction: column;
-    background-size: 220px;
-    background-position: right -20px bottom -10px;
   }
 
   .game-hero__meta {
-    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    justify-content: stretch;
   }
 
   .game-layout {
@@ -366,13 +372,15 @@
   }
 
   .game-hero {
-    padding: 22px 20px;
-    border-radius: 24px;
-    background-image: linear-gradient(135deg, rgba(255, 250, 235, 0.98), rgba(237, 244, 223, 0.96));
+    padding: 20px 18px;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.7), transparent 24%),
+      linear-gradient(135deg, rgba(255, 250, 235, 0.98), rgba(237, 244, 223, 0.96));
   }
 
   .game-hero__meta {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .phase-popup {

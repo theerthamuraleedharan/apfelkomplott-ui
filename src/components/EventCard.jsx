@@ -1,4 +1,5 @@
 import "./EventCard.css";
+import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   formatSaleBonusMoneyLine,
@@ -7,6 +8,12 @@ import {
 import { formatHarvestLossText } from "../utils/eventEffects";
 import CardMedia from "./CardMedia";
 import AnimatedModal from "./AnimatedModal";
+
+const EVENT_CARD_HELP_POINTS = [
+  "Event cards introduce a temporary twist for the current round, so each turn feels a little less predictable.",
+  "When you pick one face-down card, it reveals an effect that can change scoring, bonuses, costs, or harvest conditions.",
+  "Read the revealed event carefully before moving on, because it can affect what choices make sense in the next phases.",
+];
 
 export function EventDrawModal({
   options,
@@ -17,6 +24,7 @@ export function EventDrawModal({
   onRetry,
 }) {
   const reduceMotion = useReducedMotion();
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   return (
     <AnimatedModal
@@ -25,11 +33,44 @@ export function EventDrawModal({
       backdropClassName="event-popup__backdrop"
       panelClassName="event-popup event-popup--draw"
     >
-        <h3 className="event-popup__eyebrow">Draw Event</h3>
+        <div className="event-popup__topRow">
+          <h3 className="event-popup__eyebrow">Draw Event</h3>
+          <button
+            type="button"
+            className="event-popup__infoButton"
+            onClick={() => setIsHelpOpen((open) => !open)}
+            aria-expanded={isHelpOpen}
+            aria-controls="event-card-help"
+            title="What is an event card?"
+          >
+            i
+          </button>
+        </div>
         <h4 className="event-popup__title">Choose a face-down event card</h4>
         <p className="event-popup__description">
           Pick one hidden event to reveal the next twist in the round.
         </p>
+        <div className="event-popup__mandatoryNote">
+          This choice is required. Select one event card to continue the round.
+        </div>
+
+        <AnimatePresence initial={false}>
+          {isHelpOpen && (
+            <motion.div
+              id="event-card-help"
+              className="event-popup__help"
+              initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+              transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+            >
+              <div className="event-popup__helpTitle">What is an event card?</div>
+              {EVENT_CARD_HELP_POINTS.map((point) => (
+                <p key={point}>{point}</p>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {options.length > 0 && (
           <div className="event-draw__grid">
