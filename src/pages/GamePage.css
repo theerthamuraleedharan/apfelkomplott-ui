@@ -136,6 +136,73 @@
   align-items: start;
 }
 
+.game-focus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 252, 244, 0.88);
+  border: 1px solid rgba(83, 105, 58, 0.12);
+  box-shadow:
+    0 10px 24px rgba(59, 74, 40, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.game-focus__copy {
+  min-width: 0;
+}
+
+.game-focus__eyebrow {
+  margin-bottom: 6px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #70805a;
+}
+
+.game-focus__title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #22321f;
+}
+
+.game-focus__summary {
+  margin: 8px 0 0;
+  color: rgba(33, 49, 30, 0.76);
+  line-height: 1.55;
+}
+
+.game-focus__meta {
+  display: grid;
+  gap: 10px;
+  min-width: min(100%, 300px);
+}
+
+.game-focus__chip {
+  justify-self: start;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(63, 97, 55, 0.1);
+  color: #31502d;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.game-focus__tip {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(83, 105, 58, 0.1);
+  color: rgba(33, 49, 30, 0.76);
+  line-height: 1.5;
+}
+
 .board-col {
   display: flex;
   flex-direction: column;
@@ -198,6 +265,15 @@
   margin: 0;
   color: rgba(33, 49, 30, 0.75);
   line-height: 1.55;
+}
+
+.controlsCard__status {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(83, 105, 58, 0.1);
+  color: rgba(33, 49, 30, 0.78);
+  line-height: 1.45;
 }
 
 .controlsCard__button {
@@ -360,6 +436,11 @@
     grid-template-columns: 1fr;
   }
 
+  .game-focus {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .sidebar {
     position: static;
   }
@@ -381,6 +462,16 @@
 
   .game-hero__meta {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .game-focus {
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+
+  .game-focus__meta {
+    min-width: 0;
+    width: 100%;
   }
 
   .phase-popup {

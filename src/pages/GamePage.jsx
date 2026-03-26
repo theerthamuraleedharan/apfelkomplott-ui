@@ -26,6 +26,7 @@ import PhaseProgressBar from "../components/PhaseProgressBar";
 import AnimatedModal from "../components/AnimatedModal";
 import GameHelpModal from "../components/GameHelpModal";
 import HelpButton from "../components/HelpButton";
+import { PHASE_LABELS, PHASE_ORDER } from "../constants/phases";
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
@@ -149,6 +150,77 @@ function setHelpModalPreference() {
 
 function toText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function getPhaseCoach(phase) {
+  const guidance = {
+    MOVE_MARKER: {
+      summary: "Start the new round and get the board ready for the next sequence of actions.",
+      tip: "This is a transition step. Once the round marker is updated, you can move ahead.",
+      urgency: "Quick setup",
+    },
+    DRAW_EVENT: {
+      summary: "Pick one event card. The revealed event can change costs, bonuses, or upcoming harvest outcomes.",
+      tip: "You must choose one event card before the round can continue.",
+      urgency: "Required choice",
+    },
+    REFILL_CARDS: {
+      summary: "The market refreshes here so you can see what production cards are available later.",
+      tip: "Scan the new cards now so your next investment decision is easier.",
+      urgency: "Preview market",
+    },
+    SELL: {
+      summary: "Resolve apple sales and convert your orchard output into money.",
+      tip: "Check any active bonus or event effect before moving on.",
+      urgency: "Money step",
+    },
+    DELIVER: {
+      summary: "Move apples through delivery so they can actually be sold.",
+      tip: "Think of this as preparing your stock for the market.",
+      urgency: "Board action",
+    },
+    HARVEST: {
+      summary: "Collect apples from the plantation and see how this round’s conditions affect yield.",
+      tip: "Harvest is often influenced by event cards, so keep the latest event result in mind.",
+      urgency: "Board action",
+    },
+    ROTATE: {
+      summary: "Rotate the plantation to advance the orchard cycle.",
+      tip: "This helps reset the board for the next round structure.",
+      urgency: "Board update",
+    },
+    INTERMEDIATE_SCORING: {
+      summary: "Review how the round changed Economy, Environment, and Health.",
+      tip: "Use this moment to see whether your strategy is helping or hurting the orchard balance.",
+      urgency: "Score check",
+    },
+    INVEST: {
+      summary: "Spend money on investments or production cards to improve future rounds.",
+      tip: "Compare card effects before buying. Long-term cards shape your strategy more heavily.",
+      urgency: "Best time to act",
+    },
+    CARD_SCORING: {
+      summary: "Apply end-of-round production card effects before the next round begins.",
+      tip: "Watch for popups here, because this step can change scores or even farming mode.",
+      urgency: "End of round",
+    },
+  };
+
+  return guidance[phase] ?? {
+    summary: "Follow the current board step, then continue when the phase is complete.",
+    tip: "Open Help anytime if you need the full explanation.",
+    urgency: "Current step",
+  };
+}
+
+function getNextPhaseLabel(currentPhase) {
+  const currentIndex = PHASE_ORDER.indexOf(currentPhase);
+  if (currentIndex === -1 || currentIndex === PHASE_ORDER.length - 1) {
+    return "Next round";
+  }
+
+  const nextPhase = PHASE_ORDER[currentIndex + 1];
+  return PHASE_LABELS[nextPhase] ?? "Next step";
 }
 
 export default function GamePage({ onRestart }) {
@@ -397,6 +469,20 @@ export default function GamePage({ onRestart }) {
 
   if (!gameState) return <div className="game-loading">Loading game...</div>;
 
+  const phaseCoach = getPhaseCoach(gameState.currentPhase);
+  const controlsDisabled =
+    gameState.currentPhase === "DRAW_EVENT" ||
+    eventSelectionLoading ||
+    Boolean(revealedEvent);
+  const controlsStatusText =
+    gameState.currentPhase === "DRAW_EVENT"
+      ? "Choose an event card in the popup to unlock the next step."
+      : revealedEvent
+        ? "Review the revealed event, then continue."
+        : eventSelectionLoading
+          ? "The selected event is being revealed."
+          : `After this, the game will move to ${getNextPhaseLabel(gameState.currentPhase)}.`;
+
   return (
     <div className="game-root">
       <div className="game-shell">
@@ -460,6 +546,20 @@ export default function GamePage({ onRestart }) {
             round={gameState.currentRound}
           />
         </motion.div>
+
+        <section className="game-focus">
+          <div className="game-focus__copy">
+            <div className="game-focus__eyebrow">Current Step</div>
+            <h2 className="game-focus__title">
+              {PHASE_LABELS[gameState.currentPhase] ?? gameState.currentPhase.replaceAll("_", " ")}
+            </h2>
+            <p className="game-focus__summary">{phaseCoach.summary}</p>
+          </div>
+          <div className="game-focus__meta">
+            <div className="game-focus__chip">{phaseCoach.urgency}</div>
+            <div className="game-focus__tip">{phaseCoach.tip}</div>
+          </div>
+        </section>
 
         {gameState.currentPhase === "DRAW_EVENT" && (
           <EventDrawModal
@@ -596,6 +696,23 @@ export default function GamePage({ onRestart }) {
 
           <aside className="sidebar">
             <motion.div
+              className="panel panel--soft"
+              key={`controls-${gameState.currentPhase}`}
+              initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
+            >
+              <div className="panel__eyebrow">Next Move</div>
+              <Controls
+                phase={gameState.currentPhase}
+                onNextPhase={handleNextPhase}
+                buttonLabel={`Continue to ${getNextPhaseLabel(gameState.currentPhase)}`}
+                statusText={controlsStatusText}
+                disableNextPhase={controlsDisabled}
+              />
+            </motion.div>
+
+            <motion.div
               className="panel panel--soft score-panel"
               initial={reduceMotion ? false : { opacity: 0.9, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -613,25 +730,6 @@ export default function GamePage({ onRestart }) {
                 }
                 shadeNetsPenalty={
                   gameState.productionCardCostModifiers?.ST_USE_SHADE_NETS ?? 0
-                }
-              />
-            </motion.div>
-
-            <motion.div
-              className="panel panel--soft"
-              key={`controls-${gameState.currentPhase}`}
-              initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
-            >
-              <div className="panel__eyebrow">Turn Controls</div>
-              <Controls
-                phase={gameState.currentPhase}
-                onNextPhase={handleNextPhase}
-                disableNextPhase={
-                  gameState.currentPhase === "DRAW_EVENT" ||
-                  eventSelectionLoading ||
-                  Boolean(revealedEvent)
                 }
               />
             </motion.div>
