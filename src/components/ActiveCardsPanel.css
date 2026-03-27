@@ -10,6 +10,74 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
+.activeCards--embedded {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  height: 100%;
+  min-height: 0;
+  background:
+    radial-gradient(circle at top right, rgba(255, 218, 147, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(255, 253, 247, 0.96), rgba(245, 239, 222, 0.92));
+  box-shadow:
+    inset 0 0 0 1px rgba(83, 105, 58, 0.08),
+    0 12px 26px rgba(59, 74, 40, 0.08);
+}
+
+.activeCards--embedded .activeCards__header {
+  margin-bottom: 12px;
+}
+
+.activeCards--embedded .activeCards__title {
+  font-size: 1.15rem;
+}
+
+.activeCards--embedded .activeCards__subtitle {
+  margin-top: 6px;
+  font-size: 0.92rem;
+}
+
+.activeCards--embedded .activeCards__grid {
+  position: relative;
+  grid-template-columns: 1fr;
+  padding-bottom: 340px;
+}
+
+.activeCards--embedded .activeCard__summary {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activeCards--embedded .activeCard__summaryMain,
+.activeCards--embedded .activeCard__summaryMeta {
+  width: 100%;
+}
+
+.activeCards--embedded .activeCard__summaryMain {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.activeCards--embedded .activeCard__summaryMeta {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.activeCards--embedded .activeCard__name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.35;
+}
+
+.activeCards--embedded .activeCard__deck,
+.activeCards--embedded .activeCard__status,
+.activeCards--embedded .activeCard__summaryYears {
+  flex: 0 0 auto;
+}
+
 .activeCards__header {
   display: flex;
   align-items: flex-start;
@@ -89,6 +157,26 @@
   gap: 14px;
 }
 
+.activeCards__body {
+  min-height: 0;
+}
+
+.activeCards--embedded .activeCards__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: visible;
+  padding-right: 6px;
+}
+
+.activeCards--embedded .activeCards__body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.activeCards--embedded .activeCards__body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(95, 112, 72, 0.28);
+}
+
 .activeCards__empty {
   padding: 18px 20px;
   border-radius: 20px;
@@ -108,6 +196,14 @@
     0 12px 24px rgba(59, 74, 40, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
   transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.activeCards--embedded .activeCard {
+  overflow: visible;
+}
+
+.activeCards--embedded .activeCard.is-expanded {
+  z-index: 8;
 }
 
 .activeCard::before {
@@ -231,6 +327,25 @@
 .activeCard__details {
   padding: 0 16px 16px;
   border-top: 1px solid rgba(83, 105, 58, 0.08);
+}
+
+.activeCards--embedded .activeCard__details {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: calc(100% - 12px);
+  z-index: 10;
+  padding: 16px;
+  border-top: none;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 254, 248, 0.98), rgba(245, 239, 223, 0.96));
+  border: 1px solid rgba(83, 105, 58, 0.12);
+  box-shadow:
+    0 18px 32px rgba(59, 74, 40, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .activeCard__effectGroup + .activeCard__effectGroup {

@@ -84,6 +84,59 @@ export default function InvestmentPanel({
   );
 }
 
+export function InvestmentQuickPanel({
+  money,
+  onBuySeedling,
+  onBuyPreGrown,
+  onBuyCrate,
+  onBuyStand,
+}) {
+  const handlers = {
+    seedling: onBuySeedling,
+    pregrown: onBuyPreGrown,
+    crate: onBuyCrate,
+    stand: onBuyStand,
+  };
+
+  return (
+    <section className="investQuickPanel">
+      <div className="investQuickPanel__header">
+        <div>
+          <div className="investQuickPanel__eyebrow">Invest Phase</div>
+          <h3 className="investQuickPanel__title">Buy upgrades now</h3>
+          <p className="investQuickPanel__hint">
+            Pick a farm upgrade here, then scroll down only if you want to inspect production cards too.
+          </p>
+        </div>
+
+        <div className="investQuickPanel__money">
+          <span>Cash</span>
+          <strong>{money}</strong>
+        </div>
+      </div>
+
+      <div className="investQuickPanel__grid">
+        {INVESTMENT_ACTIONS.map((action) => (
+          <button
+            key={action.id}
+            className={`investQuickAction${money < action.cost ? " is-disabled" : ""}`}
+            onClick={handlers[action.id]}
+            disabled={money < action.cost}
+            type="button"
+            title={money < action.cost ? `Need ${action.cost} money` : `Buy for ${action.cost} money`}
+          >
+            <div className="investQuickAction__top">
+              <span className="investQuickAction__name">{action.title}</span>
+              <span className="investQuickAction__cost">{action.cost}</span>
+            </div>
+            <span className="investQuickAction__sub">{action.cta}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ActionCard({ action, money, onClick }) {
   const disabled = money < action.cost;
 

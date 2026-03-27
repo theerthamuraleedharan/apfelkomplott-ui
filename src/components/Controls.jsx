@@ -5,6 +5,8 @@ export default function Controls({
   onNextPhase,
   showScorePopup,
   disableNextPhase = false,
+  buttonLabel = "Continue to Next Step",
+  statusText = "",
 }) {
   return (
     <div className="controlsCard">
@@ -12,13 +14,14 @@ export default function Controls({
       <p className="controlsCard__hint">
         Continue when you have finished the current <strong>{PHASE_LABELS[phase]}</strong> actions.
       </p>
+      {statusText ? <div className="controlsCard__status">{statusText}</div> : null}
 
       <button
         className="controlsCard__button"
         disabled={showScorePopup || disableNextPhase}
         onClick={onNextPhase}
       >
-        Next Phase
+        {buttonLabel}
       </button>
     </div>
   );

@@ -41,7 +41,12 @@ function getTreeOffsets(index) {
   return positions[index] ?? { x: 0, y: 0 };
 }
 
-export default function ProductionZone({ plantation, phase, round, lastEventResult }) {
+export default function ProductionZone({
+  plantation,
+  phase,
+  round,
+  lastEventResult,
+}) {
   const previousPlantationRef = useRef(null);
   const previousPhaseRef = useRef(null);
   const rotateSnapshotRef = useRef(null);
@@ -171,21 +176,6 @@ export default function ProductionZone({ plantation, phase, round, lastEventResu
 
           <div className="disk-center-note">
             <span className="disk-center-dot" />
-          </div>
-        </div>
-
-        <div className="production-legend">
-          <div className="legend-item">
-            <span className="legend-chip young" />
-            <span>Fields 1-2: growing</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-chip mature" />
-            <span>Fields 3-6: producing</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-chip expired" />
-            <span>After field 6, trees are removed</span>
           </div>
         </div>
       </div>

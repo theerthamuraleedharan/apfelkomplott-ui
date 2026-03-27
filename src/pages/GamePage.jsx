@@ -19,13 +19,14 @@ import ActiveCardsPanel from "../components/ActiveCardsPanel";
 import Market from "../components/Market";
 import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
-import InvestmentPanel from "../components/InvestmentPanel";
+import InvestmentPanel, { InvestmentQuickPanel } from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
 import AnimatedModal from "../components/AnimatedModal";
 import GameHelpModal from "../components/GameHelpModal";
 import HelpButton from "../components/HelpButton";
+import { PHASE_LABELS, PHASE_ORDER } from "../constants/phases";
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
@@ -151,6 +152,77 @@ function toText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+function getPhaseCoach(phase) {
+  const guidance = {
+    MOVE_MARKER: {
+      summary: "Start the new round and get the board ready for the next sequence of actions.",
+      tip: "This is a transition step. Once the round marker is updated, you can move ahead.",
+      urgency: "Quick setup",
+    },
+    DRAW_EVENT: {
+      summary: "Pick one event card. The revealed event can change costs, bonuses, or upcoming harvest outcomes.",
+      tip: "You must choose one event card before the round can continue.",
+      urgency: "Required choice",
+    },
+    REFILL_CARDS: {
+      summary: "The market refreshes here so you can see what production cards are available later.",
+      tip: "Scan the new cards now so your next investment decision is easier.",
+      urgency: "Preview market",
+    },
+    SELL: {
+      summary: "Resolve apple sales and convert your orchard output into money.",
+      tip: "Check any active bonus or event effect before moving on.",
+      urgency: "Money step",
+    },
+    DELIVER: {
+      summary: "Move apples through delivery so they can actually be sold.",
+      tip: "Think of this as preparing your stock for the market.",
+      urgency: "Board action",
+    },
+    HARVEST: {
+      summary: "Collect apples from the plantation and see how this round’s conditions affect yield.",
+      tip: "Harvest is often influenced by event cards, so keep the latest event result in mind.",
+      urgency: "Board action",
+    },
+    ROTATE: {
+      summary: "Rotate the plantation to advance the orchard cycle.",
+      tip: "This helps reset the board for the next round structure.",
+      urgency: "Board update",
+    },
+    INTERMEDIATE_SCORING: {
+      summary: "Review how the round changed Economy, Environment, and Health.",
+      tip: "Use this moment to see whether your strategy is helping or hurting the orchard balance.",
+      urgency: "Score check",
+    },
+    INVEST: {
+      summary: "Spend money on investments or production cards to improve future rounds.",
+      tip: "Compare card effects before buying. Long-term cards shape your strategy more heavily.",
+      urgency: "Best time to act",
+    },
+    CARD_SCORING: {
+      summary: "Apply end-of-round production card effects before the next round begins.",
+      tip: "Watch for popups here, because this step can change scores or even farming mode.",
+      urgency: "End of round",
+    },
+  };
+
+  return guidance[phase] ?? {
+    summary: "Follow the current board step, then continue when the phase is complete.",
+    tip: "Open Help anytime if you need the full explanation.",
+    urgency: "Current step",
+  };
+}
+
+function getNextPhaseLabel(currentPhase) {
+  const currentIndex = PHASE_ORDER.indexOf(currentPhase);
+  if (currentIndex === -1 || currentIndex === PHASE_ORDER.length - 1) {
+    return "Next round";
+  }
+
+  const nextPhase = PHASE_ORDER[currentIndex + 1];
+  return PHASE_LABELS[nextPhase] ?? "Next step";
+}
+
 export default function GamePage({ onRestart }) {
   const reduceMotion = useReducedMotion();
   const [gameState, setGameState] = useState(null);
@@ -170,7 +242,11 @@ export default function GamePage({ onRestart }) {
   const [guideError, setGuideError] = useState("");
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
+  const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
+  const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
   const hasCheckedWelcomeHelpRef = useRef(false);
+  const lastInvestPromptRef = useRef("");
+  const hasShownEarlyFlowPromptRef = useRef(false);
 
   function showErrorPopup(message) {
     if (!message) return;
@@ -310,6 +386,29 @@ export default function GamePage({ onRestart }) {
     }
   }, [gameState]);
 
+  useEffect(() => {
+    if (!gameState || hasShownEarlyFlowPromptRef.current || isHelpModalOpen) return;
+    if (gameState.currentRound > 2) return;
+
+    hasShownEarlyFlowPromptRef.current = true;
+    setIsEarlyFlowPromptOpen(true);
+  }, [gameState, isHelpModalOpen]);
+
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.currentPhase !== "INVEST") {
+      setIsInvestPromptOpen(false);
+      return;
+    }
+
+    const investPromptKey = `${gameState.currentRound}-${gameState.currentPhase}`;
+    if (lastInvestPromptRef.current === investPromptKey) return;
+
+    lastInvestPromptRef.current = investPromptKey;
+    setIsInvestPromptOpen(true);
+  }, [gameState]);
+
   async function handleNextPhase() {
     const updated = await nextPhase();
 
@@ -350,10 +449,16 @@ export default function GamePage({ onRestart }) {
       await buyInvestment(type);
       const updated = await getGameState();
       setGameState(updated);
+      return true;
     } catch (err) {
       // Backend owns investment rules, so business-rule failures show here as a user-facing popup.
       showErrorPopup(err.message);
+      return false;
     }
+  }
+
+  async function handlePopupBuy(type) {
+    await buy(type);
   }
 
   async function handleBuyProductionCard(cardId) {
@@ -397,6 +502,20 @@ export default function GamePage({ onRestart }) {
 
   if (!gameState) return <div className="game-loading">Loading game...</div>;
 
+  const phaseCoach = getPhaseCoach(gameState.currentPhase);
+  const controlsDisabled =
+    gameState.currentPhase === "DRAW_EVENT" ||
+    eventSelectionLoading ||
+    Boolean(revealedEvent);
+  const controlsStatusText =
+    gameState.currentPhase === "DRAW_EVENT"
+      ? "Choose an event card in the popup to unlock the next step."
+      : revealedEvent
+        ? "Review the revealed event, then continue."
+        : eventSelectionLoading
+          ? "The selected event is being revealed."
+          : `After this, the game will move to ${getNextPhaseLabel(gameState.currentPhase)}.`;
+
   return (
     <div className="game-root">
       <div className="game-shell">
@@ -412,10 +531,10 @@ export default function GamePage({ onRestart }) {
           <div className="game-hero__copy">
             <p className="game-kicker">Orchard Strategy Board</p>
             <h1 className="game-title">Apfelkomplott</h1>
-            <p className="game-subtitle">
+            {/* <p className="game-subtitle">
               Guide your orchard through shifting seasons, production choices, and
               careful investments while balancing economy, environment, and health.
-            </p>
+            </p> */}
           </div>
 
           <div className="game-hero__meta">
@@ -461,6 +580,20 @@ export default function GamePage({ onRestart }) {
           />
         </motion.div>
 
+        <section className="game-focus">
+          <div className="game-focus__copy">
+            <div className="game-focus__eyebrow">Current Step</div>
+            <h2 className="game-focus__title">
+              {PHASE_LABELS[gameState.currentPhase] ?? gameState.currentPhase.replaceAll("_", " ")}
+            </h2>
+            <p className="game-focus__summary">{phaseCoach.summary}</p>
+          </div>
+          <div className="game-focus__meta">
+            <div className="game-focus__chip">{phaseCoach.urgency}</div>
+            <div className="game-focus__tip">{phaseCoach.tip}</div>
+          </div>
+        </section>
+
         {gameState.currentPhase === "DRAW_EVENT" && (
           <EventDrawModal
             options={eventOptions}
@@ -478,6 +611,36 @@ export default function GamePage({ onRestart }) {
             onContinue={() => setRevealedEvent(null)}
           />
         )}
+
+        <AnimatedModal
+          isOpen={isEarlyFlowPromptOpen}
+          onClose={() => setIsEarlyFlowPromptOpen(false)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          <div className="phase-popup__eyebrow">Early Rounds</div>
+          <h2 className="phase-popup__title">Why does the board look quiet at first?</h2>
+          <div className="phase-popup__reasons">
+            <p>
+              The first rounds are setup rounds. Trees need time to grow before apples
+              start moving through the orchard.
+            </p>
+            <p>
+              The normal flow is: <strong>Harvest in round 3</strong>,{" "}
+              <strong>Deliver in round 4</strong>, and <strong>Sell in round 5</strong>.
+            </p>
+            <p>
+              For now, focus on building the orchard by buying trees, crates, and sales
+              stands so later rounds have a smooth apple flow.
+            </p>
+          </div>
+          <button
+            className="phase-popup__button"
+            onClick={() => setIsEarlyFlowPromptOpen(false)}
+          >
+            I understand
+          </button>
+        </AnimatedModal>
 
         <AnimatedModal
           isOpen={Boolean(cardScoringPopup)}
@@ -573,11 +736,62 @@ export default function GamePage({ onRestart }) {
           )}
         </AnimatedModal>
 
+        <AnimatedModal
+          isOpen={isInvestPromptOpen}
+          onClose={() => setIsInvestPromptOpen(false)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          <div className="phase-popup__topbar">
+            <div>
+              <div className="phase-popup__eyebrow">Invest Phase</div>
+              <h2 className="phase-popup__title">Do you want to buy something?</h2>
+            </div>
+
+            <button
+              type="button"
+              className="phase-popup__iconClose"
+              onClick={() => setIsInvestPromptOpen(false)}
+              aria-label="Close investment popup"
+            >
+              x
+            </button>
+          </div>
+
+          <div className="phase-popup__reasons">
+            <p>
+              This is your chance to buy orchard upgrades before the round moves on.
+            </p>
+            <p>
+              You can choose a quick upgrade here, or close this and inspect production
+              cards further down the page.
+            </p>
+          </div>
+
+          <div className="phase-popup__embedded-panel">
+            <InvestmentQuickPanel
+              money={gameState.money}
+              onBuySeedling={() => handlePopupBuy("BUY_SEEDLING")}
+              onBuyPreGrown={() => handlePopupBuy("BUY_PRE_GROWN_TREE")}
+              onBuyCrate={() => handlePopupBuy("BUY_CRATE")}
+              onBuyStand={() => handlePopupBuy("BUY_SALES_STAND")}
+            />
+          </div>
+
+          <button
+            className="phase-popup__button phase-popup__button--secondary"
+            onClick={() => setIsInvestPromptOpen(false)}
+          >
+            Close
+          </button>
+        </AnimatedModal>
+
         <div className="game-layout">
           <div className="board-col">
             <BoardLayout
               gameState={gameState}
               animationPhase={animationPhase}
+              activeProductionCards={activeProductionCards}
             />
 
             {gameState.currentPhase === "INVEST" && (
@@ -595,6 +809,41 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <aside className="sidebar">
+            {gameState.currentPhase === "INVEST" && (
+              <motion.div
+                className="panel panel--soft"
+                key={`invest-quick-${gameState.money}`}
+                initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+              >
+                <InvestmentQuickPanel
+                  money={gameState.money}
+                  onBuySeedling={() => buy("BUY_SEEDLING")}
+                  onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
+                  onBuyCrate={() => buy("BUY_CRATE")}
+                  onBuyStand={() => buy("BUY_SALES_STAND")}
+                />
+              </motion.div>
+            )}
+
+            <motion.div
+              className="panel panel--soft"
+              key={`controls-${gameState.currentPhase}`}
+              initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
+            >
+              <div className="panel__eyebrow">Next Move</div>
+              <Controls
+                phase={gameState.currentPhase}
+                onNextPhase={handleNextPhase}
+                buttonLabel={`Continue to ${getNextPhaseLabel(gameState.currentPhase)}`}
+                statusText={controlsStatusText}
+                disableNextPhase={controlsDisabled}
+              />
+            </motion.div>
+
             <motion.div
               className="panel panel--soft score-panel"
               initial={reduceMotion ? false : { opacity: 0.9, y: 8 }}
@@ -616,33 +865,7 @@ export default function GamePage({ onRestart }) {
                 }
               />
             </motion.div>
-
-            <motion.div
-              className="panel panel--soft"
-              key={`controls-${gameState.currentPhase}`}
-              initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
-            >
-              <div className="panel__eyebrow">Turn Controls</div>
-              <Controls
-                phase={gameState.currentPhase}
-                onNextPhase={handleNextPhase}
-                disableNextPhase={
-                  gameState.currentPhase === "DRAW_EVENT" ||
-                  eventSelectionLoading ||
-                  Boolean(revealedEvent)
-                }
-              />
-            </motion.div>
           </aside>
-        </div>
-
-        <div className="full-width">
-          <ActiveCardsPanel
-            activeCards={activeProductionCards}
-            currentRound={gameState.currentRound}
-          />
         </div>
 
         <div className="full-width">

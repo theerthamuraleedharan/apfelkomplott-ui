@@ -1,15 +1,26 @@
+import "./TransportArea.css";
+
 export default function TransportZone({ plantation }) {
   return (
-    <div>
-      <h2>🚚 Transport</h2>
+    <div className="transportZone">
+      <div className="zoneSection__header">
+        <div>
+          <h2 className="zoneSection__title">Transport</h2>
+          <p className="zoneSection__subtitle">
+            Crates hold apples that are on the way to market.
+          </p>
+        </div>
+        <div className="zoneSection__count">
+          {plantation.crates.length} crate{plantation.crates.length === 1 ? "" : "s"}
+        </div>
+      </div>
 
       {plantation.crates.length === 0 && (
-        <p>No transport crates</p>
+        <div className="zoneSection__empty">No transport crates yet.</div>
       )}
 
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div className="zoneSection__grid">
         {plantation.crates.map((crate) => {
-
           const applesInCrate = plantation.apples.filter(
             (apple) =>
               apple.location === "IN_TRANSPORT" &&
@@ -17,24 +28,17 @@ export default function TransportZone({ plantation }) {
           );
 
           return (
-            <div
-              key={crate.id}
-              style={{
-                width: "80px",
-                height: "80px",
-                background: "#f4d03f",
-                borderRadius: "8px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "20px"
-              }}
-            >
-              📦
-              <div>
+            <div key={crate.id} className="zoneCard zoneCard--transport">
+              <div className="zoneCard__icon">📦</div>
+              <div className="zoneCard__title">Crate</div>
+              <div className="zoneCard__value">
+                {applesInCrate.length} apple{applesInCrate.length === 1 ? "" : "s"}
+              </div>
+              <div className="zoneCard__items">
                 {applesInCrate.map((apple) => (
-                  <span key={apple.id}>🍎</span>
+                  <span key={apple.id} className="zoneCard__item">
+                    🍎
+                  </span>
                 ))}
               </div>
             </div>

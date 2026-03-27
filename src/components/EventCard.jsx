@@ -126,17 +126,45 @@ export default function EventRevealModal({ event, onContinue }) {
       isOpen={true}
       onClose={onContinue}
       backdropClassName="event-popup__backdrop"
-      panelClassName="event-popup"
+      panelClassName="event-popup event-popup--reveal"
     >
       <motion.div
+        className="event-popup__revealInner"
         initial={reduceMotion ? false : { rotateY: 10, opacity: 0 }}
         animate={{ rotateY: 0, opacity: 1 }}
         transition={{ duration: reduceMotion ? 0 : 0.3, ease: "easeOut" }}
         style={{ transformStyle: "preserve-3d" }}
       >
-        <h3 className="event-popup__eyebrow">Event Card</h3>
-        <h4 className="event-popup__title">{event.cardName}</h4>
-        <p className="event-popup__description">{event.description}</p>
+        <div className="event-popup__sparkles" aria-hidden="true">
+          <span className="event-popup__sparkle event-popup__sparkle--one">✦</span>
+          <span className="event-popup__sparkle event-popup__sparkle--two">✿</span>
+          <span className="event-popup__sparkle event-popup__sparkle--three">✦</span>
+        </div>
+
+        <motion.h3
+          className="event-popup__eyebrow"
+          initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
+        >
+          Event Card
+        </motion.h3>
+        <motion.h4
+          className="event-popup__title"
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut", delay: 0.03 }}
+        >
+          {event.cardName}
+        </motion.h4>
+        <motion.p
+          className="event-popup__description"
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut", delay: 0.06 }}
+        >
+          {event.description}
+        </motion.p>
 
         {mediaItems.length > 0 && (
           <motion.div
@@ -213,9 +241,14 @@ export default function EventRevealModal({ event, onContinue }) {
           </motion.div>
         )}
 
-        <button className="event-popup__button" onClick={onContinue}>
+        <motion.button
+          className="event-popup__button"
+          onClick={onContinue}
+          whileHover={reduceMotion ? undefined : { y: -2, scale: 1.02 }}
+          whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+        >
           Continue
-        </button>
+        </motion.button>
       </motion.div>
     </AnimatedModal>
   );
