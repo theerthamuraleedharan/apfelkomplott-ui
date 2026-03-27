@@ -92,25 +92,25 @@ function normalizeGuide(guide) {
 function buildGuideSteps(roundPhases) {
   const fallbackDescriptions = {
     MOVE_MARKER:
-      "Advance the round marker so the whole table knows a new round has started.",
+      "Start the new round by moving the round marker forward. The game lasts up to 15 rounds.",
     DRAW_EVENT:
-      "Reveal the round twist by selecting one event card. This can change costs, bonuses, or later outcomes.",
+      "Draw and resolve the event card. Some events happen now, while others also affect the next round.",
     REFILL_CARDS:
-      "Refresh the market so new production cards are available before investment decisions.",
+      "Refill the production card market so fresh options are available before you invest.",
     SELL:
-      "Resolve sales and turn harvested apples into money based on current bonuses and conditions.",
+      "Sell apples that are already in sales stands. Each sold apple gives money.",
     DELIVER:
-      "Move apples through delivery so your orchard output can actually reach the market.",
+      "Move apples from transport crates into sales stands. Apples must arrive here before they can be sold.",
     HARVEST:
-      "Collect apples from the plantation and check whether events or earlier choices affect the yield.",
+      "Harvest apples from mature trees into transport crates. Only trees in fields 3 to 6 produce apples.",
     ROTATE:
-      "Rotate plantation state so the board is ready for the next yearly cycle.",
+      "Rotate the plantation disk so every tree gets older. Trees that pass field 6 are removed.",
     INTERMEDIATE_SCORING:
-      "Review score changes to economy, environment, and health after the round's effects are applied.",
+      "Check whether you created waste or left crates and stands empty. Balanced flow helps your economy.",
     INVEST:
-      "Spend money on improvements or production cards to shape future rounds.",
+      "Buy trees, crates, sales stands, or production cards. This is where you build your long-term strategy.",
     CARD_SCORING:
-      "Apply production-card scoring effects that trigger at the end of the round.",
+      "Apply production card effects that change economy, environment, or health before the next round starts.",
   };
 
   return roundPhases.map((phase, index) => ({
@@ -122,6 +122,88 @@ function buildGuideSteps(roundPhases) {
       "Complete this part of the round before moving to the next step.",
   }));
 }
+
+const HOW_TO_PLAY_HIGHLIGHTS = [
+  {
+    title: "Your Main Goal",
+    body:
+      "Build an orchard that earns money without hurting environment or health. You are playing cooperatively, so discuss each buy together.",
+  },
+  {
+    title: "Apple Flow",
+    body:
+      "Apples do not earn money immediately. They move in this order: Plantation -> Transport -> Sales -> Money.",
+  },
+  {
+    title: "Important Delay",
+    body:
+      "A harvested apple is usually delivered next round and sold the round after that. That means harvest, delivery, and selling are spread across multiple rounds.",
+  },
+  {
+    title: "What To Balance",
+    body:
+      "Do not buy only trees. You also need enough transport crates and sales stands, otherwise apples are wasted and empty capacity can hurt your economy.",
+  },
+];
+
+const HELP_PAGES = [
+  { key: "guide", label: "Guide" },
+  { key: "steps", label: "How A Turn Works" },
+  { key: "rules", label: "Rules" },
+];
+
+const RULEBOOK_SECTIONS = [
+  {
+    title: "Game Principle",
+    body:
+      "Players cooperatively build an apple plantation and must balance three goals at the same time: economy, environment, and health. The game lasts up to 15 rounds, and every decision should support the orchard without creating waste or bottlenecks.",
+  },
+  {
+    title: "Production Disk Rules",
+    items: [
+      "The plantation wheel has 6 fields. Fields 1 and 2 are nursery fields and do not produce apples yet.",
+      "Trees start producing only once they reach field 3. Each harvest-ready tree produces 1 apple per round.",
+      "Trees age when the plantation rotates. Trees that would move past field 6 are removed from the game.",
+      "A field normally holds up to 5 trees, but cards can change capacity. It can never go above 8 or below 3.",
+    ],
+  },
+  {
+    title: "Round Flow Rules",
+    items: [
+      "Each round has 10 steps. First move the round marker, then resolve the event card, then refill production cards if needed.",
+      "The plantation phase follows: sell apples, deliver apples from transport to sales, harvest from trees, rotate the plantation, then do intermediate scoring.",
+      "The investment phase comes after that: buy trees, transport, sales stands, or production cards, then apply card scoring.",
+      "Some steps only become possible in later rounds: harvest starts from round 3, deliver from round 4, and selling from round 5.",
+    ],
+  },
+  {
+    title: "Investment Rules",
+    items: [
+      "Seedlings start on field 1. Pre-grown trees start on field 2, so they produce sooner.",
+      "Transport crates and sales stands each have a capacity of 3 apples.",
+      "Fill one crate fully before starting another so empty capacity is easy to see during scoring.",
+      "Players decide investments cooperatively. If they cannot agree, the starting player decides.",
+    ],
+  },
+  {
+    title: "Scoring And Waste",
+    items: [
+      "Wasted apples hurt the economy score. Every 3 discarded apples gives -1 economy.",
+      "Each completely empty transport unit or sales stand gives -1 economy.",
+      "If transport and sales are used perfectly with no empty spaces, you gain +1 economy.",
+      "Environment and health are driven mainly by production cards and card effects.",
+    ],
+  },
+  {
+    title: "Event Card Rules",
+    items: [
+      "Event cards can apply immediately, later, or in both the current and next round.",
+      "Delayed event cards are placed in the upcoming-events area and resolved in the following round.",
+      "This means some rounds can have two event effects active, while others may have none.",
+      "Any delayed event that would resolve after round 15 expires instead.",
+    ],
+  },
+];
 
 function Section({ title, items, body }) {
   if (!body && (!items || items.length === 0)) return null;
@@ -156,6 +238,12 @@ export default function GameHelpModal({
   const normalizedGuide = normalizeGuide(guide);
   const [activePage, setActivePage] = useState("guide");
   const guideSteps = buildGuideSteps(normalizedGuide.roundPhases);
+  const activePageIndex = HELP_PAGES.findIndex((page) => page.key === activePage);
+  const previousPage = activePageIndex > 0 ? HELP_PAGES[activePageIndex - 1] : null;
+  const nextPage =
+    activePageIndex >= 0 && activePageIndex < HELP_PAGES.length - 1
+      ? HELP_PAGES[activePageIndex + 1]
+      : null;
 
   useEffect(() => {
     if (isOpen) {
@@ -171,20 +259,16 @@ export default function GameHelpModal({
       panelClassName="game-help__modal"
     >
       <div className="game-help__pageTabs">
-        <button
-          type="button"
-          className={`game-help__pageTab${activePage === "guide" ? " is-active" : ""}`}
-          onClick={() => setActivePage("guide")}
-        >
-          Guide
-        </button>
-        <button
-          type="button"
-          className={`game-help__pageTab${activePage === "steps" ? " is-active" : ""}`}
-          onClick={() => setActivePage("steps")}
-        >
-          How A Turn Works
-        </button>
+        {HELP_PAGES.map((page) => (
+          <button
+            key={page.key}
+            type="button"
+            className={`game-help__pageTab${activePage === page.key ? " is-active" : ""}`}
+            onClick={() => setActivePage(page.key)}
+          >
+            {page.label}
+          </button>
+        ))}
       </div>
 
       <div className="game-help__header">
@@ -255,11 +339,25 @@ export default function GameHelpModal({
                 </div>
               </section>
             </>
-          ) : (
+          ) : activePage === "steps" ? (
             <section className="game-help__section">
+              <div className="game-help__sectionTitle">How To Play</div>
+              <p className="game-help__body">
+                Think of each round as one repeating orchard cycle. First the game updates the round, then apples move forward through the chain, then you invest for the future.
+              </p>
+
+              <div className="game-help__stepHighlights">
+                {HOW_TO_PLAY_HIGHLIGHTS.map((item) => (
+                  <article key={item.title} className="game-help__stepHighlight">
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                  </article>
+                ))}
+              </div>
+
               <div className="game-help__sectionTitle">Turn Steps</div>
               <p className="game-help__body">
-                A round moves through the same sequence each time. Use these steps to understand what the game expects from you next.
+                Use this simpler order to understand what happens in a normal round and where your attention should go.
               </p>
               <div className="game-help__stepList">
                 {guideSteps.map((step) => {
@@ -285,26 +383,46 @@ export default function GameHelpModal({
                 })}
               </div>
             </section>
+          ) : (
+            <>
+              <section className="game-help__section">
+                <div className="game-help__sectionTitle">Rulebook Highlights</div>
+                <p className="game-help__body">
+                  These rules are adapted from the attached Apfelkomplott PDF rulebook so players can check the core system without leaving the game.
+                </p>
+              </section>
+
+              {RULEBOOK_SECTIONS.map((section) => (
+                <Section
+                  key={section.title}
+                  title={section.title}
+                  body={section.body}
+                  items={section.items}
+                />
+              ))}
+            </>
           )}
 
           <div className="game-help__footer">
-            {activePage === "steps" ? (
+            {previousPage ? (
               <button
                 type="button"
                 className="game-help__secondaryAction"
-                onClick={() => setActivePage("guide")}
+                onClick={() => setActivePage(previousPage.key)}
               >
-                Back To Guide
+                Back: {previousPage.label}
               </button>
-            ) : (
+            ) : null}
+
+            {nextPage ? (
               <button
                 type="button"
                 className="game-help__action"
-                onClick={() => setActivePage("steps")}
+                onClick={() => setActivePage(nextPage.key)}
               >
-                Next: Turn Steps
+                Next: {nextPage.label}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       )}

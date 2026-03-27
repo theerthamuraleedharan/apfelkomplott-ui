@@ -1,15 +1,26 @@
+import "./SalesArea.css";
+
 export default function SalesZone({ plantation }) {
   return (
-    <div>
-      <h2>🧺 Sales</h2>
+    <div className="salesZone">
+      <div className="zoneSection__header">
+        <div>
+          <h2 className="zoneSection__title">Sales</h2>
+          <p className="zoneSection__subtitle">
+            Sales stands are where ready apples wait to be sold.
+          </p>
+        </div>
+        <div className="zoneSection__count">
+          {plantation.salesStands.length} stand{plantation.salesStands.length === 1 ? "" : "s"}
+        </div>
+      </div>
 
       {plantation.salesStands.length === 0 && (
-        <p>No sales stands</p>
+        <div className="zoneSection__empty">No sales stands yet.</div>
       )}
 
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div className="zoneSection__grid">
         {plantation.salesStands.map((stand) => {
-
           const applesInStand = plantation.apples.filter(
             (apple) =>
               apple.location === "IN_SALES_STAND" &&
@@ -17,24 +28,17 @@ export default function SalesZone({ plantation }) {
           );
 
           return (
-            <div
-              key={stand.id}
-              style={{
-                width: "90px",
-                height: "80px",
-                background: "#82e0aa",
-                borderRadius: "8px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "20px"
-              }}
-            >
-              🧺
-              <div>
+            <div key={stand.id} className="zoneCard zoneCard--sales">
+              <div className="zoneCard__icon">🧺</div>
+              <div className="zoneCard__title">Stand</div>
+              <div className="zoneCard__value">
+                {applesInStand.length} apple{applesInStand.length === 1 ? "" : "s"}
+              </div>
+              <div className="zoneCard__items">
                 {applesInStand.map((apple) => (
-                  <span key={apple.id}>🍎</span>
+                  <span key={apple.id} className="zoneCard__item">
+                    🍎
+                  </span>
                 ))}
               </div>
             </div>

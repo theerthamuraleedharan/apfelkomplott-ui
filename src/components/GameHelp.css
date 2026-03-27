@@ -217,6 +217,31 @@
   gap: 12px;
 }
 
+.game-help__stepHighlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.game-help__stepHighlight {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(83, 105, 58, 0.1);
+}
+
+.game-help__stepHighlight h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #22321f;
+}
+
+.game-help__stepHighlight p {
+  margin: 10px 0 0;
+  color: rgba(33, 49, 30, 0.8);
+  line-height: 1.6;
+}
+
 .game-help__phaseList {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -315,6 +340,7 @@
 
 .game-help__footer {
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
   margin-top: 4px;
 }
@@ -356,6 +382,11 @@
   .game-help__phaseList {
     grid-template-columns: 1fr;
   }
+
+  .game-help__stepHighlights {
+    grid-template-columns: 1fr;
+  }
+
 }
 
 @media (max-width: 720px) {
@@ -371,6 +402,11 @@
   .game-help__modal {
     padding: 22px 18px;
     border-radius: 24px;
+  }
+
+  .game-help__pageTabs,
+  .game-help__footer {
+    flex-wrap: wrap;
   }
 
   .game-help__backdrop {

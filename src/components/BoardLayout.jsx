@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";
 import ProductionZone from "./ProductionZone";
+import ActiveCardsPanel from "./ActiveCardsPanel";
 import AnimatedModal from "./AnimatedModal";
 import AnimatedNumber from "./AnimatedNumber";
 
@@ -9,7 +10,11 @@ import { useEffect, useRef, useState } from "react";
 
 import "./BoardLayout.css";
 
-export default function BoardLayout({ gameState, animationPhase }) {
+export default function BoardLayout({
+  gameState,
+  animationPhase,
+  activeProductionCards,
+}) {
   const [showSellPopup, setShowSellPopup] = useState(false);
   const [showScorePopup, setShowScorePopup] = useState(false);
   const lastShownScoreRef = useRef(null);
@@ -80,6 +85,20 @@ export default function BoardLayout({ gameState, animationPhase }) {
           phase={gameState.currentPhase}
           round={gameState.currentRound}
           lastEventResult={gameState.lastEventResult}
+        />
+      </motion.div>
+
+      <motion.div
+        className="zone active-cards-zone"
+        key={`active-cards-${gameState.currentRound}-${activeProductionCards?.length ?? 0}`}
+        initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
+      >
+        <ActiveCardsPanel
+          activeCards={activeProductionCards}
+          currentRound={gameState.currentRound}
+          variant="embedded"
         />
       </motion.div>
 

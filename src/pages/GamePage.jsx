@@ -19,7 +19,7 @@ import ActiveCardsPanel from "../components/ActiveCardsPanel";
 import Market from "../components/Market";
 import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
-import InvestmentPanel from "../components/InvestmentPanel";
+import InvestmentPanel, { InvestmentQuickPanel } from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
@@ -242,7 +242,11 @@ export default function GamePage({ onRestart }) {
   const [guideError, setGuideError] = useState("");
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
+  const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
+  const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
   const hasCheckedWelcomeHelpRef = useRef(false);
+  const lastInvestPromptRef = useRef("");
+  const hasShownEarlyFlowPromptRef = useRef(false);
 
   function showErrorPopup(message) {
     if (!message) return;
@@ -382,6 +386,29 @@ export default function GamePage({ onRestart }) {
     }
   }, [gameState]);
 
+  useEffect(() => {
+    if (!gameState || hasShownEarlyFlowPromptRef.current || isHelpModalOpen) return;
+    if (gameState.currentRound > 2) return;
+
+    hasShownEarlyFlowPromptRef.current = true;
+    setIsEarlyFlowPromptOpen(true);
+  }, [gameState, isHelpModalOpen]);
+
+  useEffect(() => {
+    if (!gameState) return;
+
+    if (gameState.currentPhase !== "INVEST") {
+      setIsInvestPromptOpen(false);
+      return;
+    }
+
+    const investPromptKey = `${gameState.currentRound}-${gameState.currentPhase}`;
+    if (lastInvestPromptRef.current === investPromptKey) return;
+
+    lastInvestPromptRef.current = investPromptKey;
+    setIsInvestPromptOpen(true);
+  }, [gameState]);
+
   async function handleNextPhase() {
     const updated = await nextPhase();
 
@@ -422,10 +449,16 @@ export default function GamePage({ onRestart }) {
       await buyInvestment(type);
       const updated = await getGameState();
       setGameState(updated);
+      return true;
     } catch (err) {
       // Backend owns investment rules, so business-rule failures show here as a user-facing popup.
       showErrorPopup(err.message);
+      return false;
     }
+  }
+
+  async function handlePopupBuy(type) {
+    await buy(type);
   }
 
   async function handleBuyProductionCard(cardId) {
@@ -498,10 +531,10 @@ export default function GamePage({ onRestart }) {
           <div className="game-hero__copy">
             <p className="game-kicker">Orchard Strategy Board</p>
             <h1 className="game-title">Apfelkomplott</h1>
-            <p className="game-subtitle">
+            {/* <p className="game-subtitle">
               Guide your orchard through shifting seasons, production choices, and
               careful investments while balancing economy, environment, and health.
-            </p>
+            </p> */}
           </div>
 
           <div className="game-hero__meta">
@@ -578,6 +611,36 @@ export default function GamePage({ onRestart }) {
             onContinue={() => setRevealedEvent(null)}
           />
         )}
+
+        <AnimatedModal
+          isOpen={isEarlyFlowPromptOpen}
+          onClose={() => setIsEarlyFlowPromptOpen(false)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          <div className="phase-popup__eyebrow">Early Rounds</div>
+          <h2 className="phase-popup__title">Why does the board look quiet at first?</h2>
+          <div className="phase-popup__reasons">
+            <p>
+              The first rounds are setup rounds. Trees need time to grow before apples
+              start moving through the orchard.
+            </p>
+            <p>
+              The normal flow is: <strong>Harvest in round 3</strong>,{" "}
+              <strong>Deliver in round 4</strong>, and <strong>Sell in round 5</strong>.
+            </p>
+            <p>
+              For now, focus on building the orchard by buying trees, crates, and sales
+              stands so later rounds have a smooth apple flow.
+            </p>
+          </div>
+          <button
+            className="phase-popup__button"
+            onClick={() => setIsEarlyFlowPromptOpen(false)}
+          >
+            I understand
+          </button>
+        </AnimatedModal>
 
         <AnimatedModal
           isOpen={Boolean(cardScoringPopup)}
@@ -673,11 +736,62 @@ export default function GamePage({ onRestart }) {
           )}
         </AnimatedModal>
 
+        <AnimatedModal
+          isOpen={isInvestPromptOpen}
+          onClose={() => setIsInvestPromptOpen(false)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          <div className="phase-popup__topbar">
+            <div>
+              <div className="phase-popup__eyebrow">Invest Phase</div>
+              <h2 className="phase-popup__title">Do you want to buy something?</h2>
+            </div>
+
+            <button
+              type="button"
+              className="phase-popup__iconClose"
+              onClick={() => setIsInvestPromptOpen(false)}
+              aria-label="Close investment popup"
+            >
+              x
+            </button>
+          </div>
+
+          <div className="phase-popup__reasons">
+            <p>
+              This is your chance to buy orchard upgrades before the round moves on.
+            </p>
+            <p>
+              You can choose a quick upgrade here, or close this and inspect production
+              cards further down the page.
+            </p>
+          </div>
+
+          <div className="phase-popup__embedded-panel">
+            <InvestmentQuickPanel
+              money={gameState.money}
+              onBuySeedling={() => handlePopupBuy("BUY_SEEDLING")}
+              onBuyPreGrown={() => handlePopupBuy("BUY_PRE_GROWN_TREE")}
+              onBuyCrate={() => handlePopupBuy("BUY_CRATE")}
+              onBuyStand={() => handlePopupBuy("BUY_SALES_STAND")}
+            />
+          </div>
+
+          <button
+            className="phase-popup__button phase-popup__button--secondary"
+            onClick={() => setIsInvestPromptOpen(false)}
+          >
+            Close
+          </button>
+        </AnimatedModal>
+
         <div className="game-layout">
           <div className="board-col">
             <BoardLayout
               gameState={gameState}
               animationPhase={animationPhase}
+              activeProductionCards={activeProductionCards}
             />
 
             {gameState.currentPhase === "INVEST" && (
@@ -695,6 +809,24 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <aside className="sidebar">
+            {gameState.currentPhase === "INVEST" && (
+              <motion.div
+                className="panel panel--soft"
+                key={`invest-quick-${gameState.money}`}
+                initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
+              >
+                <InvestmentQuickPanel
+                  money={gameState.money}
+                  onBuySeedling={() => buy("BUY_SEEDLING")}
+                  onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
+                  onBuyCrate={() => buy("BUY_CRATE")}
+                  onBuyStand={() => buy("BUY_SALES_STAND")}
+                />
+              </motion.div>
+            )}
+
             <motion.div
               className="panel panel--soft"
               key={`controls-${gameState.currentPhase}`}
@@ -734,13 +866,6 @@ export default function GamePage({ onRestart }) {
               />
             </motion.div>
           </aside>
-        </div>
-
-        <div className="full-width">
-          <ActiveCardsPanel
-            activeCards={activeProductionCards}
-            currentRound={gameState.currentRound}
-          />
         </div>
 
         <div className="full-width">

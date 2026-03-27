@@ -109,7 +109,11 @@ function isCardStillActive(card, currentRound) {
   return true;
 }
 
-export default function ActiveCardsPanel({ activeCards = [], currentRound }) {
+export default function ActiveCardsPanel({
+  activeCards = [],
+  currentRound,
+  variant = "default",
+}) {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [expandedCardKey, setExpandedCardKey] = useState(null);
   const visibleCards = activeCards.filter((card) =>
@@ -117,7 +121,7 @@ export default function ActiveCardsPanel({ activeCards = [], currentRound }) {
   );
 
   return (
-    <section className="activeCards">
+    <section className={`activeCards activeCards--${variant}`}>
       <button
         className="activeCards__header activeCards__headerButton"
         type="button"
@@ -139,24 +143,27 @@ export default function ActiveCardsPanel({ activeCards = [], currentRound }) {
         </div>
       </button>
 
-      {isPanelOpen &&
-        (visibleCards.length > 0 ? (
-          <div className="activeCards__grid">
-            {visibleCards.map((card, index) => (
-              <ActiveCardItem
-                card={card}
-                index={index}
-                expandedCardKey={expandedCardKey}
-                onToggle={setExpandedCardKey}
-                key={getCardKey(card, index)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="activeCards__empty">
-            No active production cards are available for future years.
-          </div>
-        ))}
+      {isPanelOpen ? (
+        <div className="activeCards__body">
+          {visibleCards.length > 0 ? (
+            <div className="activeCards__grid">
+              {visibleCards.map((card, index) => (
+                <ActiveCardItem
+                  card={card}
+                  index={index}
+                  expandedCardKey={expandedCardKey}
+                  onToggle={setExpandedCardKey}
+                  key={getCardKey(card, index)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="activeCards__empty">
+              No active production cards are available for future years.
+            </div>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

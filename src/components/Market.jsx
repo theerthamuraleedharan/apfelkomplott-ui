@@ -79,6 +79,16 @@ export default function Market({ market, mode, canBuy, onBuy }) {
     return (card?.media ?? []).filter((item) => item && item.type === "qr" && (item.src || item.value));
   }
 
+  function getPreviewSections(card) {
+    return getEffectSections(card)
+      .map((section) => ({
+        ...section,
+        effects: (section.effects ?? []).slice(0, 1),
+      }))
+      .filter((section) => (section.effects ?? []).length > 0)
+      .slice(0, 2);
+  }
+
   const openCard = (card) => setSelectedCard(card);
 
   return (
@@ -120,6 +130,18 @@ export default function Market({ market, mode, canBuy, onBuy }) {
           const card = market[idx] ?? null;
           const headerMedia = getHeaderMedia(card);
           const bodyMedia = getBodyMedia(card);
+          const previewSections = getPreviewSections(card);
+          const totalEffects = card
+            ? getEffectSections(card).reduce(
+                (count, section) => count + ((section.effects ?? []).length || 0),
+                0
+              )
+            : 0;
+          const previewEffectCount = previewSections.reduce(
+            (count, section) => count + ((section.effects ?? []).length || 0),
+            0
+          );
+          const hiddenEffects = Math.max(totalEffects - previewEffectCount, 0);
 
           return (
             <div className="market__slot" key={idx}>
@@ -163,30 +185,15 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   </div>
 
                   <div className="prod-card__body">
-                    {bodyMedia.length > 0 && (
-                      <div className="prod-card__bodyMedia">
-                        {bodyMedia.map((item, index) => (
-                          <CardMedia
-                            key={`${card.id}-body-${index}`}
-                            item={item}
-                            imageClassName="prod-card__img"
-                            qrClassName="prod-card__qrImg"
-                            qrWrapClassName="prod-card__qrWrap"
-                            placeholderClassName="prod-card__imgPlaceholder"
-                          />
-                        ))}
-                      </div>
-                    )}
+                    <div className="prod-card__sectionTitle">Card Preview</div>
 
-                    <div className="prod-card__sectionTitle">Effects</div>
-
-                    <div className="prod-card__effects">
-                      {getEffectSections(card).map((section, sectionIndex) => (
-                        <div key={sectionIndex} className="effectGroup">
+                    <div className="prod-card__effects prod-card__effects--preview">
+                      {previewSections.map((section, sectionIndex) => (
+                        <div key={sectionIndex} className="effectGroup effectGroup--preview">
                           {section.title && <div className="effectGroup__title">{section.title}</div>}
 
                           {section.effects.map((effect, effectIndex) => (
-                            <div className="effect" key={`${sectionIndex}-${effectIndex}`}>
+                            <div className="effect effect--preview" key={`${sectionIndex}-${effectIndex}`}>
                               <div className="effect__years">Year {effect.years?.join(", ")}</div>
 
                               <div className="effect__stats">
@@ -199,9 +206,21 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                         </div>
                       ))}
 
-                      {getEffectSections(card).every((section) => (section.effects ?? []).length === 0) && (
+                      {previewSections.length === 0 && (
                         <div className="no-effects">No effects configured.</div>
                       )}
+                    </div>
+
+                    <div className="prod-card__previewFooter">
+                      <div className="prod-card__inspectHint">
+                        Tap to inspect full card
+                      </div>
+
+                      {hiddenEffects > 0 ? (
+                        <div className="prod-card__more">+{hiddenEffects} more effects</div>
+                      ) : bodyMedia.length > 0 ? (
+                        <div className="prod-card__more">Includes extra media</div>
+                      ) : null}
                     </div>
                   </div>
 
