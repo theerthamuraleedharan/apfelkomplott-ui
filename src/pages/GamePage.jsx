@@ -507,6 +507,24 @@ export default function GamePage({ onRestart }) {
     gameState.currentPhase === "DRAW_EVENT" ||
     eventSelectionLoading ||
     Boolean(revealedEvent);
+  const shouldSpotlightNextMove =
+    !controlsDisabled && gameState.currentPhase === "MOVE_MARKER";
+  const controlsHeadline = shouldSpotlightNextMove
+    ? `Start Round ${gameState.currentRound}`
+    : "Ready for the next step?";
+  const controlsHint = shouldSpotlightNextMove ? (
+    <>
+      This is the first action for the round. Click the button below to begin
+      <strong>{` Round ${gameState.currentRound}`}</strong>.
+    </>
+  ) : (
+    <>
+      Continue when you have finished the current <strong>{PHASE_LABELS[gameState.currentPhase]}</strong> actions.
+    </>
+  );
+  const controlsButtonLabel = shouldSpotlightNextMove
+    ? `Start Round ${gameState.currentRound}`
+    : `Continue to ${getNextPhaseLabel(gameState.currentPhase)}`;
   const controlsStatusText =
     gameState.currentPhase === "DRAW_EVENT"
       ? "Choose an event card in the popup to unlock the next step."
@@ -786,7 +804,11 @@ export default function GamePage({ onRestart }) {
           </button>
         </AnimatedModal>
 
-        <div className="game-layout">
+        <div className={`game-layout${shouldSpotlightNextMove ? " game-layout--spotlight" : ""}`}>
+          {shouldSpotlightNextMove ? (
+            <div className="game-layout__spotlightMask" aria-hidden="true" />
+          ) : null}
+
           <div className="board-col">
             <BoardLayout
               gameState={gameState}
@@ -828,19 +850,24 @@ export default function GamePage({ onRestart }) {
             )}
 
             <motion.div
-              className="panel panel--soft"
+              className={`panel panel--soft${shouldSpotlightNextMove ? " panel--next-move" : ""}`}
               key={`controls-${gameState.currentPhase}`}
               initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.26, ease: "easeOut" }}
             >
-              <div className="panel__eyebrow">Next Move</div>
+              <div className="panel__eyebrow">
+                {shouldSpotlightNextMove ? "Start Here" : "Next Move"}
+              </div>
               <Controls
                 phase={gameState.currentPhase}
                 onNextPhase={handleNextPhase}
-                buttonLabel={`Continue to ${getNextPhaseLabel(gameState.currentPhase)}`}
+                buttonLabel={controlsButtonLabel}
                 statusText={controlsStatusText}
                 disableNextPhase={controlsDisabled}
+                spotlight={shouldSpotlightNextMove}
+                headline={controlsHeadline}
+                hint={controlsHint}
               />
             </motion.div>
 

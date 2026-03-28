@@ -130,10 +130,31 @@
 }
 
 .game-layout {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 18px;
   align-items: start;
+}
+
+.game-layout__spotlightMask {
+  position: absolute;
+  inset: -8px;
+  z-index: 3;
+  pointer-events: none;
+  background: rgba(244, 240, 220, 0.18);
+  backdrop-filter: blur(7px) saturate(0.9);
+}
+
+.game-layout--spotlight .board-col,
+.game-layout--spotlight .score-panel {
+  position: relative;
+  z-index: 2;
+}
+
+.game-layout--spotlight .sidebar {
+  position: relative;
+  z-index: 5;
 }
 
 .game-focus {
@@ -252,11 +273,49 @@
 .controlsCard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+}
+
+.controlsCard--spotlight {
+  position: relative;
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 228, 177, 0.44), transparent 42%),
+    linear-gradient(180deg, rgba(255, 250, 235, 0.99), rgba(245, 239, 214, 0.97));
+  border: 1px solid rgba(203, 144, 62, 0.26);
+  box-shadow:
+    0 0 0 4px rgba(235, 178, 88, 0.14),
+    0 24px 46px rgba(120, 88, 30, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  animation: controlsSpotlightPulse 2.2s ease-in-out infinite;
+}
+
+.panel--next-move {
+  position: relative;
+  overflow: visible;
+  box-shadow:
+    0 0 0 8px rgba(214, 226, 182, 0.34),
+    0 30px 52px rgba(75, 94, 49, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.panel--next-move::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: 28px;
+  border: 2px solid rgba(235, 178, 88, 0.22);
+  box-shadow: 0 0 0 10px rgba(235, 178, 88, 0.08);
+  pointer-events: none;
+}
+
+.controlsCard__buttonWrap {
+  position: relative;
 }
 
 .controlsCard__headline {
-  font-size: 1rem;
+  font-size: 1.22rem;
   font-weight: 800;
   color: #22321f;
 }
@@ -264,16 +323,17 @@
 .controlsCard__hint {
   margin: 0;
   color: rgba(33, 49, 30, 0.75);
-  line-height: 1.55;
+  line-height: 1.6;
+  font-size: 1rem;
 }
 
 .controlsCard__status {
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.74);
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(83, 105, 58, 0.1);
   color: rgba(33, 49, 30, 0.78);
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .controlsCard__button {
@@ -289,6 +349,20 @@
   cursor: pointer;
   box-shadow: 0 14px 28px rgba(48, 76, 44, 0.24);
   transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+.controlsCard--spotlight .controlsCard__button {
+  position: relative;
+  padding-block: 16px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.16), transparent 24%),
+    linear-gradient(180deg, #3f6137 0%, #2b4528 100%);
+  box-shadow:
+    0 18px 32px rgba(48, 76, 44, 0.3),
+    0 0 0 10px rgba(63, 97, 55, 0.12);
+  font-size: 1rem;
+  animation: controlsButtonPulse 1.8s ease-in-out infinite;
 }
 
 .controlsCard__button:hover:not(:disabled) {
@@ -460,6 +534,36 @@
   box-shadow: 0 10px 22px rgba(59, 74, 40, 0.08);
 }
 
+@keyframes controlsSpotlightPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px rgba(235, 178, 88, 0.12),
+      0 18px 34px rgba(120, 88, 30, 0.12);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 7px rgba(235, 178, 88, 0.18),
+      0 24px 42px rgba(120, 88, 30, 0.18);
+  }
+}
+
+@keyframes controlsButtonPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 32px rgba(48, 76, 44, 0.3),
+      0 0 0 10px rgba(63, 97, 55, 0.12);
+  }
+
+  50% {
+    box-shadow:
+      0 22px 36px rgba(48, 76, 44, 0.34),
+      0 0 0 14px rgba(63, 97, 55, 0.16);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-chip,
   .panel--soft,
@@ -467,6 +571,14 @@
   .phase-popup__button,
   .phase-popup__iconClose {
     transition: none;
+  }
+
+  .controlsCard--spotlight {
+    animation: none;
+  }
+
+  .controlsCard--spotlight .controlsCard__button {
+    animation: none;
   }
 }
 
@@ -493,6 +605,7 @@
   .sidebar {
     position: static;
   }
+
 }
 
 @media (max-width: 720px) {
