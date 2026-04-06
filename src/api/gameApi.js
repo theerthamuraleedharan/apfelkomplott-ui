@@ -1,3 +1,5 @@
+// API helper layer for all backend game requests.
+// Keeps network logic centralized so UI components stay focused on rendering and interaction.
 const DEFAULT_API_BASE_URL = "http://localhost:8081";
 
 function normalizeBaseUrl(url) {

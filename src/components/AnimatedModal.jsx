@@ -1,3 +1,5 @@
+// Reusable animated modal wrapper.
+// Keeps popups visually consistent across help, investment, event, and warning dialogs.
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 export default function AnimatedModal({

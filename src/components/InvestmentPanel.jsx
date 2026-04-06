@@ -1,3 +1,5 @@
+// Investment actions available during the invest phase.
+// Lets the player buy trees, crates, stands, and other upgrades.
 import "./InvestmentPanel.css";
 
 const INVESTMENT_ACTIONS = [

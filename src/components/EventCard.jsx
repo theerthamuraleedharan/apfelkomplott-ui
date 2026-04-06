@@ -1,3 +1,5 @@
+// Handles event card reveal and event choice presentation.
+// Used to explain round events and apply player-selected event outcomes.
 import "./EventCard.css";
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";

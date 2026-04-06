@@ -1,3 +1,5 @@
+// Action panel for moving the game forward.
+// Highlights the next required step and triggers the phase transition.
 import { PHASE_LABELS } from "../constants/phases";
 
 export default function Controls({

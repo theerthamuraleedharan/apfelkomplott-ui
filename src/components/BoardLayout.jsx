@@ -1,3 +1,5 @@
+// Main board composition component.
+// Arranges the production, transport, sales, and supporting board sections together.
 import { motion, useReducedMotion } from "framer-motion";
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";

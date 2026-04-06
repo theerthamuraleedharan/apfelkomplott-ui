@@ -1,3 +1,5 @@
+// Landing screen shown before a game starts.
+// Introduces the experience and moves the player into setup.
 import { motion } from "framer-motion";
 import "./StartScreen.css";
 

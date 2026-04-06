@@ -1,3 +1,5 @@
+// Shows production cards that are currently active.
+// Helps the player track long-term effects that still influence future rounds.
 import { useState } from "react";
 import "./ActiveCardsPanel.css";
 

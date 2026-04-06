@@ -1,3 +1,5 @@
+// Main gameplay screen.
+// Loads game state, coordinates phase changes, and connects the board, market, help, and score UI.
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import "./GamePage.css";

@@ -1,3 +1,5 @@
+// Displays the production disk and orchard growth state.
+// Helps the player understand where trees are in the production cycle.
 import { useEffect, useRef } from "react";
 import "./ProductionZone.css";
 import { formatHarvestLossBadge, formatHarvestLossText } from "../utils/eventEffects";

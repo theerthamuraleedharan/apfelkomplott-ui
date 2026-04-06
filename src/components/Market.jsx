@@ -1,3 +1,5 @@
+// Displays available production cards in the market.
+// Players can inspect and buy cards here during the investment phase.
 import "./Market.css";
 
 import { useEffect, useState } from "react";

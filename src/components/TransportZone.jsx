@@ -1,3 +1,5 @@
+// Shows transport crates and apples moving toward market.
+// Represents the delivery stage between harvest and sales.
 import "./TransportArea.css";
 
 export default function TransportZone({ plantation }) {

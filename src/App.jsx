@@ -1,3 +1,5 @@
+// Top-level application router.
+// Handles navigation between the start screen, mode selection, and active game view.
 import { useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import GamePage from "./pages/GamePage";

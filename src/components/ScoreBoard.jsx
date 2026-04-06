@@ -1,3 +1,5 @@
+// Displays money and the three main impact scores.
+// Gives the player a quick summary of current game performance.
 import "./ScoreBoard.css";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatSaleBonusPerApple } from "../utils/saleBonus";

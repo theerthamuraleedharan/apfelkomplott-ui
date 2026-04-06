@@ -1,3 +1,5 @@
+// Displays sales stands and market-ready apples.
+// Represents where delivered apples wait to be sold.
 import "./SalesArea.css";
 
 export default function SalesZone({ plantation }) {
