@@ -35,6 +35,7 @@ async function parseJsonResponse(res, fallbackMessage) {
     throw new Error(text || fallbackMessage);
   }
 
+  // Some backend endpoints return an empty body on success, so callers need a safe null.
   const contentType = res.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     throw new Error(fallbackMessage);
@@ -64,6 +65,7 @@ export async function getEventOptions() {
     throw new Error(text);
   }
 
+  // The backend may briefly answer without JSON if no event selection is available yet.
   const contentType = res.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) {
     return null;
@@ -151,5 +153,8 @@ export async function buyInvestment(type) {
     const errorText = await res.text();
     throw new Error(errorText);
   }
+
+  // The backend validates and mutates state, but this endpoint does not return the new state.
+  // Callers are expected to refresh /state after a successful investment.
 }
 

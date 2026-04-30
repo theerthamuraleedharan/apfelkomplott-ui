@@ -21,6 +21,8 @@ export default function Market({ market, mode, canBuy, onBuy }) {
       if (e.key === "Escape") setSelectedCard(null);
     };
 
+    // Keep the card detail view dismissible from anywhere without pushing
+    // keyboard logic down into each individual card component.
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
@@ -82,6 +84,8 @@ export default function Market({ market, mode, canBuy, onBuy }) {
   }
 
   function getPreviewSections(card) {
+    // The market tiles intentionally show only a small preview.
+    // The full effect list stays in the modal so the grid remains scannable.
     return getEffectSections(card)
       .map((section) => ({
         ...section,
@@ -251,6 +255,8 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   </div>
                 </div>
               ) : (
+                // Empty slots are rendered deliberately instead of collapsing the grid,
+                // so players can keep a stable mental map of the five market positions.
                 <div className="marketEmpty">
                   <div className="marketEmpty__icon">+</div>
                   <div className="marketEmpty__label">Empty slot</div>
@@ -351,6 +357,8 @@ function CostDisplay({ card, mode, getCostDisplay }) {
   const cost = getCostDisplay(card);
 
   if (cost.type === "byMode") {
+    // Some cards cost different amounts in conventional vs organic play,
+    // so show both values and highlight the current farming mode.
     return (
       <div className="cost cost--dual">
         {cost.values.map((entry) => (
@@ -378,6 +386,8 @@ function CostDisplay({ card, mode, getCostDisplay }) {
 function getEffectSections(card) {
   if (!card) return [];
 
+  // The backend exposes multiple card schemas. Normalize them here so the
+  // rendering path stays the same for simple, by-mode, and by-size cards.
   if (card.effectsByPlantationSize) {
     return Object.entries(card.effectsByPlantationSize).map(([key, effects]) => ({
       title:

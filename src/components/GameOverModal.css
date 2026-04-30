@@ -22,6 +22,13 @@
   color: #21311e;
 }
 
+.game-over__modal--win {
+  background:
+    radial-gradient(circle at top right, rgba(255, 224, 136, 0.28), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(130, 168, 84, 0.18), transparent 28%),
+    linear-gradient(180deg, #fffdf5 0%, #eef3de 100%);
+}
+
 .game-over__eyebrow {
   margin-bottom: 8px;
   font-size: 0.76rem;
@@ -105,10 +112,122 @@
   line-height: 1.65;
 }
 
+.game-over__feedback {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(83, 105, 58, 0.1);
+}
+
+.game-over__feedbackHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.game-over__feedbackTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #21311e;
+}
+
+.game-over__feedbackHint {
+  margin: 0;
+  color: rgba(33, 49, 30, 0.72);
+  line-height: 1.55;
+}
+
+.game-over__moods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.game-over__moodButton {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(83, 105, 58, 0.14);
+  background: rgba(248, 244, 232, 0.88);
+  color: #2a3b26;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.game-over__moodButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(48, 76, 44, 0.12);
+}
+
+.game-over__moodButton--active {
+  border-color: rgba(63, 97, 55, 0.5);
+  background: linear-gradient(180deg, #f4f0df 0%, #e9e2c8 100%);
+  box-shadow: inset 0 0 0 1px rgba(63, 97, 55, 0.12);
+}
+
+.game-over__moodIcon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.game-over__feedbackLabel {
+  display: block;
+  margin-top: 16px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f7e58;
+}
+
+.game-over__feedbackInput {
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(83, 105, 58, 0.14);
+  background: rgba(255, 255, 255, 0.94);
+  color: #21311e;
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.game-over__feedbackInput:focus,
+.game-over__moodButton:focus {
+  outline: 2px solid rgba(63, 97, 55, 0.28);
+  outline-offset: 2px;
+}
+
+.game-over__feedbackFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.game-over__feedbackStatus,
+.game-over__feedbackThanks {
+  margin: 0;
+  color: rgba(33, 49, 30, 0.72);
+}
+
+.game-over__feedbackThanks {
+  color: #2f5a2a;
+  font-weight: 700;
+}
+
 .game-over__actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 22px;
+  gap: 12px;
 }
 
 .game-over__button {
@@ -129,6 +248,20 @@
   filter: brightness(1.02);
 }
 
+.game-over__button--secondary {
+  background: linear-gradient(180deg, #d9e2cd 0%, #c1cfb4 100%);
+  color: #253321;
+  box-shadow: none;
+}
+
+.game-over__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+
 @media (max-width: 720px) {
   .game-over__modal {
     padding: 24px 20px;
@@ -143,7 +276,14 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .game-over__moods {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .game-over__feedbackFooter,
   .game-over__actions {
+    flex-direction: column;
+    align-items: stretch;
     justify-content: stretch;
   }
 
@@ -153,7 +293,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .game-over__button {
+  .game-over__button,
+  .game-over__moodButton {
     transition: none;
   }
 }

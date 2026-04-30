@@ -58,11 +58,15 @@ export default function ProductionZone({
   }
 
   if (phase === "ROTATE" && previousPhaseRef.current !== "ROTATE") {
+    // Keep one snapshot of the pre-rotation plantation so the animation shows
+    // where trees came from instead of immediately jumping to the next state.
     rotateSnapshotRef.current = previousPlantationRef.current ?? plantation;
   } else if (phase !== "ROTATE") {
     rotateSnapshotRef.current = null;
   }
 
+  // The disk itself shows completed rotations for the current round,
+  // but the trees stay one step behind during the ROTATE phase animation.
   const completedRotations = phasesAfterRotation.has(phase)
     ? round ?? 0
     : Math.max((round ?? 1) - 1, 0);
@@ -78,6 +82,8 @@ export default function ProductionZone({
     phase === "ROTATE"
       ? {
           ...(rotateSnapshotRef.current ?? plantation),
+          // Trees leaving field 6 disappear during the rotation animation because
+          // the backend has already advanced them into the next growth cycle.
           trees: (rotateSnapshotRef.current ?? plantation).trees.filter(
             (tree) => tree.fieldPosition !== 6
           ),
@@ -128,6 +134,8 @@ export default function ProductionZone({
               const trees = visiblePlantation.trees.filter(
                 (tree) => tree.fieldPosition === field
               );
+              // Only render the first four trees directly to keep the disk readable.
+              // Any additional trees are summarized with a small counter badge.
               const visibleTrees = trees.slice(0, 4);
               const hiddenTreeCount = trees.length - visibleTrees.length;
 

@@ -118,6 +118,8 @@ export function InvestmentQuickPanel({
       </div>
 
       <div className="investQuickPanel__grid">
+        {/* Reuse the same action catalog as the full investment panel so both
+            entry points stay consistent when costs or labels change later. */}
         {INVESTMENT_ACTIONS.map((action) => (
           <button
             key={action.id}
@@ -144,6 +146,8 @@ function ActionCard({ action, money, onClick }) {
 
   return (
     <button
+      // Affordability is the only frontend-side lock here; the backend still
+      // performs the real phase and rule validation after the click.
       className={`investAction ${disabled ? "is-disabled" : ""}`}
       onClick={onClick}
       disabled={disabled}
