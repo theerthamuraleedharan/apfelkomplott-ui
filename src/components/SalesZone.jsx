@@ -1,3 +1,5 @@
+// Displays sales stands and market-ready apples.
+// Represents where delivered apples wait to be sold.
 import "./SalesArea.css";
 
 export default function SalesZone({ plantation }) {
@@ -21,6 +23,8 @@ export default function SalesZone({ plantation }) {
 
       <div className="zoneSection__grid">
         {plantation.salesStands.map((stand) => {
+          // Sales stands use the same shared apple collection as transport crates,
+          // so the UI derives stand contents by filtering on location and containerId.
           const applesInStand = plantation.apples.filter(
             (apple) =>
               apple.location === "IN_SALES_STAND" &&

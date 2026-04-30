@@ -1,3 +1,5 @@
+// Reopens the game help guide on demand.
+// Gives players quick access to instructions without leaving the game.
 import "./GameHelp.css";
 
 export default function HelpButton({ onClick }) {

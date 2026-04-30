@@ -1,3 +1,5 @@
+// Lets the player choose the farming mode before gameplay begins.
+// This choice changes how production and sustainability tradeoffs feel during play.
 import { motion } from "framer-motion";
 import "./ModeSelection.css";
 

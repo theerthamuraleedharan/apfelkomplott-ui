@@ -1,3 +1,5 @@
+// Displays the current phase within the round.
+// Gives players a quick sense of where they are in the turn flow.
 import "./PhaseProgressBar.css";
 import RoundTrack from "../components/RoundTrack";
 

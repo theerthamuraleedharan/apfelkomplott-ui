@@ -1,3 +1,5 @@
+// Visual round tracker for the full game timeline.
+// Helps the player see current progress across all rounds.
 import "./RoundTrack.css";
 
 export default function RoundTrack({ round }) {

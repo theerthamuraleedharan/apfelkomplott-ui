@@ -1,3 +1,5 @@
+// Displays money and the three main impact scores.
+// Gives the player a quick summary of current game performance.
 import "./ScoreBoard.css";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { formatSaleBonusPerApple } from "../utils/saleBonus";
@@ -35,6 +37,8 @@ export default function ScoreBoard({
   useEffect(() => {
     if (reduceMotion) return undefined;
 
+    // Money changes are one of the most important feedback signals in the game,
+    // so the badge briefly pulses whenever the value updates.
     setMoneyPulse(true);
     const timer = setTimeout(() => setMoneyPulse(false), 700);
     return () => clearTimeout(timer);
@@ -115,6 +119,8 @@ function InfoBadge({ title, label, value }) {
 }
 
 function ScoreBar({ label, value }) {
+  // The score track is bounded by the game rules, so values are clamped into
+  // the visible bar range even if the backend temporarily reports larger numbers.
   const pct = toPercent(value);
 
   return (

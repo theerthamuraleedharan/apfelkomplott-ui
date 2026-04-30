@@ -1,3 +1,5 @@
+// Utility helpers for formatting and interpreting event card effects.
+// Keeps event-related display logic separate from UI components.
 export function formatHarvestLossText(event) {
   const amount = Number(event?.expectedHarvestLoss) || 0;
   if (amount <= 0) return "";

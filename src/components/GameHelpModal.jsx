@@ -1,3 +1,5 @@
+// Full in-game help guide modal.
+// Used for first-time onboarding and for reopening the guide anytime.
 import { useEffect, useState } from "react";
 import AnimatedModal from "./AnimatedModal";
 import { PHASE_LABELS } from "../constants/phases";

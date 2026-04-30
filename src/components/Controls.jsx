@@ -1,3 +1,5 @@
+// Action panel for moving the game forward.
+// Highlights the next required step and triggers the phase transition.
 import { PHASE_LABELS } from "../constants/phases";
 
 export default function Controls({
@@ -26,6 +28,8 @@ export default function Controls({
       <div className="controlsCard__buttonWrap">
         <button
           className="controlsCard__button"
+          // The continue button is the single driver for backend phase progression.
+          // It stays disabled whenever another modal or required action should block it.
           disabled={showScorePopup || disableNextPhase}
           onClick={onNextPhase}
         >

@@ -1,3 +1,5 @@
+// Shows transport crates and apples moving toward market.
+// Represents the delivery stage between harvest and sales.
 import "./TransportArea.css";
 
 export default function TransportZone({ plantation }) {
@@ -21,6 +23,8 @@ export default function TransportZone({ plantation }) {
 
       <div className="zoneSection__grid">
         {plantation.crates.map((crate) => {
+          // Apples are stored as a shared collection in plantation state,
+          // so each crate view derives its own contents by matching containerId.
           const applesInCrate = plantation.apples.filter(
             (apple) =>
               apple.location === "IN_TRANSPORT" &&

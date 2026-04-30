@@ -1,3 +1,5 @@
+// Main gameplay screen.
+// Loads game state, coordinates phase changes, and connects the board, market, help, and score UI.
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import "./GamePage.css";
@@ -297,11 +299,11 @@ export default function GamePage({ onRestart }) {
     }
   }
 
-  async function fetchMarketForPhase(phase, previousSlots = []) {
-    const preserveSlots = phase !== "REFILL_CARDS";
+async function fetchMarketForPhase(phase, previousSlots = []) {
+  const preserveSlots = phase !== "REFILL_CARDS";
 
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      const currentMarket = await getMarket();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const currentMarket = await getMarket();
       const nextSlots = buildMarketSlots(
         currentMarket,
         preserveSlots ? previousSlots : []
@@ -319,11 +321,11 @@ export default function GamePage({ onRestart }) {
     return previousSlots;
   }
 
-  async function refreshGame({ preserveSlots = true } = {}) {
-    // State and market are refreshed together so board UI and card slots stay in sync.
-    const [state, activeCards] = await Promise.all([
-      getGameState(),
-      getActiveProductionCards(),
+async function refreshGame({ preserveSlots = true } = {}) {
+  // State and market are refreshed together so board UI and card slots stay in sync.
+  const [state, activeCards] = await Promise.all([
+    getGameState(),
+    getActiveProductionCards(),
     ]);
     const currentMarket = await fetchMarketForPhase(
       preserveSlots ? state.currentPhase : "REFILL_CARDS",
@@ -349,6 +351,7 @@ export default function GamePage({ onRestart }) {
 
   useEffect(() => {
     if (gameState?.currentPhase === "DRAW_EVENT") {
+      // Event choices only exist during DRAW_EVENT and should be discarded immediately after.
       loadEventOptions();
       return;
     }
@@ -390,6 +393,8 @@ export default function GamePage({ onRestart }) {
     if (!gameState || hasShownEarlyFlowPromptRef.current || isHelpModalOpen) return;
     if (gameState.currentRound > 2) return;
 
+    // Early rounds can feel empty because trees are still maturing,
+    // so show this onboarding hint only once near the start of a session.
     hasShownEarlyFlowPromptRef.current = true;
     setIsEarlyFlowPromptOpen(true);
   }, [gameState, isHelpModalOpen]);
@@ -405,6 +410,7 @@ export default function GamePage({ onRestart }) {
     const investPromptKey = `${gameState.currentRound}-${gameState.currentPhase}`;
     if (lastInvestPromptRef.current === investPromptKey) return;
 
+    // The invest prompt is phase-based, not click-based, so track the round/phase pair.
     lastInvestPromptRef.current = investPromptKey;
     setIsInvestPromptOpen(true);
   }, [gameState]);
@@ -412,6 +418,8 @@ export default function GamePage({ onRestart }) {
   async function handleNextPhase() {
     const updated = await nextPhase();
 
+    // Card scoring results are returned as part of the phase transition.
+    // Keep them in dedicated UI state so the popup can be dismissed independently.
     if (updated.productionCardFinalScoreResult?.reasons?.length > 0) {
       setCardScoringPopup(updated.productionCardFinalScoreResult);
     }
@@ -447,6 +455,7 @@ export default function GamePage({ onRestart }) {
   async function buy(type) {
     try {
       await buyInvestment(type);
+      // Investments mutate backend state without returning it, so re-fetch the source of truth.
       const updated = await getGameState();
       setGameState(updated);
       return true;
@@ -488,6 +497,7 @@ export default function GamePage({ onRestart }) {
         updatedState?.farmingMode &&
         updatedState.farmingMode !== previousMode
       ) {
+        // Some cards permanently switch the farming mode, so surface that change explicitly.
         setModeChangePopup({
           from: previousMode,
           to: updatedState.farmingMode,

@@ -1,3 +1,5 @@
+// Central phase labels and phase ordering used across the UI.
+// Prevents duplicated phase naming logic in multiple components.
 export const PHASE_LABELS = {
   MOVE_MARKER: "Move Round Marker",
   DRAW_EVENT: "Draw Event",

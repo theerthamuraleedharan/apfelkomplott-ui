@@ -1,3 +1,5 @@
+// Main board composition component.
+// Arranges the production, transport, sales, and supporting board sections together.
 import { motion, useReducedMotion } from "framer-motion";
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";
@@ -26,6 +28,8 @@ export default function BoardLayout({
     const score = scoringResult;
     const hasReasons = (score?.reasons?.length ?? 0) > 0;
 
+    // The backend can keep the same score result object visible across multiple renders.
+    // This guard prevents the scoring modal from reopening unless the actual result changed.
     if (
       score &&
       (score.economyChange !== 0 ||
@@ -43,6 +47,8 @@ export default function BoardLayout({
   }, [gameState.lastScoreResult]);
 
   useEffect(() => {
+    // Sell results become visible right after the backend advances to DELIVER,
+    // so the popup is triggered from the persisted result rather than from a click.
     if (
       gameState.currentPhase === "DELIVER" &&
       gameState.lastSellResult?.applesSold > 0
@@ -95,6 +101,7 @@ export default function BoardLayout({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut" }}
       >
+        {/* Active production cards are shown on the board because they can affect later rounds. */}
         <ActiveCardsPanel
           activeCards={activeProductionCards}
           currentRound={gameState.currentRound}
