@@ -19,14 +19,27 @@ import ActiveCardsPanel from "../components/ActiveCardsPanel";
 import Market from "../components/Market";
 import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
-import InvestmentPanel, { InvestmentQuickPanel } from "../components/InvestmentPanel";
+import InvestmentPanel from "../components/InvestmentPanel";
 import GameOverModal from "../components/GameOverModal";
 import EventCard, { EventDrawModal } from "../components/EventCard";
 import PhaseProgressBar from "../components/PhaseProgressBar";
 import AnimatedModal from "../components/AnimatedModal";
 import GameHelpModal from "../components/GameHelpModal";
 import HelpButton from "../components/HelpButton";
+import SoundToggleButton from "../components/SoundToggleButton";
 import { PHASE_LABELS, PHASE_ORDER } from "../constants/phases";
+import {
+  isSoundEnabled as getSoundEnabledPreference,
+  playCardReveal,
+  playError,
+  playGameLoss,
+  playGameWin,
+  playPhaseAdvance,
+  playRotation,
+  playSuccess,
+  playUiClick,
+  setSoundEnabled as storeSoundEnabledPreference,
+} from "../utils/soundManager";
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
@@ -152,7 +165,47 @@ function toText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
-function getPhaseCoach(phase) {
+function getPhaseCoach(phase, gameState) {
+  const round = gameState?.currentRound ?? 1;
+  const crateCount = gameState?.plantation?.crates?.length ?? 0;
+  const standCount = gameState?.plantation?.salesStands?.length ?? 0;
+
+  if (phase === "HARVEST" && round < 3) {
+    return {
+      summary: "This is still a preview step in the opening rounds. Trees need time to mature before the first real harvest begins.",
+      tip: "Keep investing in trees now so round 3 has enough apples to start the orchard flow.",
+      urgency: "Preview step",
+    };
+  }
+
+  if (phase === "DELIVER" && (round < 4 || crateCount === 0)) {
+    return {
+      summary:
+        crateCount === 0
+          ? "Delivery looks quiet because no transport crates exist yet. Apples need crates before they can move toward the market."
+          : "Delivery is mostly a preview before round 4. Once harvest fills your crates, this step will move apples toward sales.",
+      tip:
+        crateCount === 0
+          ? "Buy crates during Invest, and remember that the first harvest normally starts in round 3."
+          : "Your crates are ready. Keep growing trees so future harvests give delivery something to move.",
+      urgency: "Preview step",
+    };
+  }
+
+  if (phase === "SELL" && (round < 5 || standCount === 0)) {
+    return {
+      summary:
+        standCount === 0
+          ? "Selling feels empty because no sales stands exist yet. Apples must be harvested, delivered, and placed on stands before money is earned."
+          : "Selling usually stays quiet until round 5. Apples need to pass through harvest and delivery before this area becomes active.",
+      tip:
+        standCount === 0
+          ? "Buy sales stands during Invest so the orchard can turn delivered apples into money later."
+          : "Your stands are ready. Focus on trees, crates, and delivery capacity so later rounds reach the market.",
+      urgency: "Preview step",
+    };
+  }
+
   const guidance = {
     MOVE_MARKER: {
       summary: "Start the new round and get the board ready for the next sequence of actions.",
@@ -223,6 +276,136 @@ function getNextPhaseLabel(currentPhase) {
   return PHASE_LABELS[nextPhase] ?? "Next step";
 }
 
+function getQuietPhasePopup(phase, gameState) {
+  const plantation = gameState?.plantation;
+  if (!plantation) return null;
+
+  const round = gameState.currentRound ?? 1;
+  const crateCount = plantation.crates?.length ?? 0;
+  const standCount = plantation.salesStands?.length ?? 0;
+  const matureTreeCount = (plantation.trees ?? []).filter(
+    (tree) => tree.fieldPosition >= 3
+  ).length;
+  const applesInTransport = (plantation.apples ?? []).filter(
+    (apple) => apple.location === "IN_TRANSPORT"
+  ).length;
+  const applesInSales = (plantation.apples ?? []).filter(
+    (apple) => apple.location === "IN_SALES_STAND"
+  ).length;
+
+  if (phase === "HARVEST") {
+    if (round < 3) {
+      return {
+        key: "harvest-preview",
+        eyebrow: "Harvest Preview",
+        title: "Nothing happens here yet",
+        reasons: [
+          `Round ${round} is still part of the orchard setup. Trees need time before they can produce apples.`,
+          "The first real harvest normally starts in round 3, once trees have reached the producing fields.",
+          "For now, focus on building your orchard so later harvest phases feel more active.",
+        ],
+      };
+    }
+
+    if (matureTreeCount === 0) {
+      return {
+        key: "harvest-no-mature-trees",
+        eyebrow: "Harvest Result",
+        title: "No apples were harvested",
+        reasons: [
+          "No trees are mature enough to produce apples right now.",
+          "Trees only begin producing after they move into the later fields of the production disk.",
+          "Keep investing in trees now so future harvest rounds can feed transport and sales.",
+        ],
+      };
+    }
+  }
+
+  if (phase === "DELIVER") {
+    if (round < 4) {
+      return {
+        key: "deliver-preview",
+        eyebrow: "Delivery Preview",
+        title: "Nothing is delivered yet",
+        reasons: [
+          `Round ${round} is still before the normal delivery stage.`,
+          "Apples are usually harvested from round 3 onward and delivered from round 4 onward.",
+          "This step is here to teach the full orchard flow before crates start filling up.",
+        ],
+      };
+    }
+
+    if (crateCount === 0) {
+      return {
+        key: "deliver-no-crates",
+        eyebrow: "Delivery Result",
+        title: "No transport happened",
+        reasons: [
+          "There are no transport crates yet, so apples cannot move toward the market.",
+          "Buy crates during the Invest phase to unlock this part of the orchard flow.",
+          "Once crates exist, harvested apples will appear here before moving to sales stands.",
+        ],
+      };
+    }
+
+    if (applesInTransport === 0) {
+      return {
+        key: "deliver-no-apples",
+        eyebrow: "Delivery Result",
+        title: "There was nothing to move",
+        reasons: [
+          "No apples are currently waiting in transport crates.",
+          "This can happen when harvest has not produced enough apples yet, or when crates stayed empty.",
+          "Keep building trees and transport capacity so later rounds have something to deliver.",
+        ],
+      };
+    }
+  }
+
+  if (phase === "SELL") {
+    if (round < 5) {
+      return {
+        key: "sell-preview",
+        eyebrow: "Sales Preview",
+        title: "Nothing is sold yet",
+        reasons: [
+          `Round ${round} is still before the normal selling stage.`,
+          "Selling usually begins in round 5, after apples have been harvested and delivered.",
+          "These early rounds are mainly for preparing trees, crates, and sales stands.",
+        ],
+      };
+    }
+
+    if (standCount === 0) {
+      return {
+        key: "sell-no-stands",
+        eyebrow: "Sales Result",
+        title: "No sales happened",
+        reasons: [
+          "There are no sales stands yet, so apples have nowhere to be sold from.",
+          "Buy sales stands during the Invest phase to turn delivered apples into money.",
+          "The full money loop is: harvest, deliver, then sell.",
+        ],
+      };
+    }
+
+    if (applesInSales === 0) {
+      return {
+        key: "sell-no-apples",
+        eyebrow: "Sales Result",
+        title: "There was nothing to sell",
+        reasons: [
+          "No apples are waiting on the sales stands right now.",
+          "Apples must first be harvested and delivered before this step becomes active.",
+          "This is normal in quieter rounds while the orchard is still developing.",
+        ],
+      };
+    }
+  }
+
+  return null;
+}
+
 export default function GamePage({ onRestart }) {
   const reduceMotion = useReducedMotion();
   const [gameState, setGameState] = useState(null);
@@ -232,6 +415,7 @@ export default function GamePage({ onRestart }) {
   const [eventOptionsLoading, setEventOptionsLoading] = useState(false);
   const [eventSelectionLoading, setEventSelectionLoading] = useState(false);
   const [eventOptionsError, setEventOptionsError] = useState("");
+  const [isEventDrawModalOpen, setIsEventDrawModalOpen] = useState(false);
   const [revealedEvent, setRevealedEvent] = useState(null);
   const [animationPhase, setAnimationPhase] = useState(null);
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
@@ -240,16 +424,23 @@ export default function GamePage({ onRestart }) {
   const [guide, setGuide] = useState(null);
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideError, setGuideError] = useState("");
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() =>
+    getSoundEnabledPreference()
+  );
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
   const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
   const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
+  const [quietPhasePopup, setQuietPhasePopup] = useState(null);
   const hasCheckedWelcomeHelpRef = useRef(false);
   const lastInvestPromptRef = useRef("");
   const hasShownEarlyFlowPromptRef = useRef(false);
+  const shownQuietPhasePopupsRef = useRef(new Set());
+  const lastGameOverSoundRef = useRef("");
 
   function showErrorPopup(message) {
     if (!message) return;
+    playError();
     setErrorPopup(message);
   }
 
@@ -265,6 +456,26 @@ export default function GamePage({ onRestart }) {
     }
 
     setIsHelpModalOpen(false);
+  }
+
+  function focusInvestSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (!element) return;
+
+    element.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  }
+
+  function handleSoundToggle() {
+    const nextValue = !isSoundEnabled;
+    setIsSoundEnabled(nextValue);
+    storeSoundEnabledPreference(nextValue);
+
+    if (nextValue) {
+      playUiClick();
+    }
   }
 
   async function loadGuide() {
@@ -349,10 +560,12 @@ export default function GamePage({ onRestart }) {
 
   useEffect(() => {
     if (gameState?.currentPhase === "DRAW_EVENT") {
+      setIsEventDrawModalOpen(true);
       loadEventOptions();
       return;
     }
 
+    setIsEventDrawModalOpen(false);
     setEventOptions([]);
     setEventOptionsError("");
   }, [gameState?.currentPhase]);
@@ -361,6 +574,7 @@ export default function GamePage({ onRestart }) {
     if (!gameState) return;
 
     if (
+      gameState.currentPhase === "ROTATE" ||
       gameState.currentPhase === "HARVEST" ||
       gameState.currentPhase === "DELIVER" ||
       gameState.currentPhase === "SELL"
@@ -369,9 +583,15 @@ export default function GamePage({ onRestart }) {
 
       const timer = setTimeout(() => {
         setAnimationPhase(null);
-      }, 800);
+      }, gameState.currentPhase === "ROTATE" ? 1200 : 800);
 
       return () => clearTimeout(timer);
+    }
+  }, [gameState?.currentPhase]);
+
+  useEffect(() => {
+    if (gameState?.currentPhase === "ROTATE") {
+      playRotation();
     }
   }, [gameState?.currentPhase]);
 
@@ -396,6 +616,46 @@ export default function GamePage({ onRestart }) {
 
   useEffect(() => {
     if (!gameState) return;
+    if (isHelpModalOpen || isWelcomeHelp || isEarlyFlowPromptOpen) return;
+    if (revealedEvent || eventSelectionLoading) return;
+
+    const popup = getQuietPhasePopup(gameState.currentPhase, gameState);
+    if (!popup) return;
+    if (shownQuietPhasePopupsRef.current.has(popup.key)) return;
+
+    shownQuietPhasePopupsRef.current.add(popup.key);
+    setQuietPhasePopup(popup);
+  }, [
+    gameState,
+    isHelpModalOpen,
+    isWelcomeHelp,
+    isEarlyFlowPromptOpen,
+    revealedEvent,
+    eventSelectionLoading,
+  ]);
+
+  useEffect(() => {
+    if (!revealedEvent) return;
+    playCardReveal();
+  }, [revealedEvent]);
+
+  useEffect(() => {
+    if (!gameState?.gameOver) return;
+
+    const resultKey = `${gameState.gameResult ?? "LOSS"}-${gameState.currentRound}`;
+    if (lastGameOverSoundRef.current === resultKey) return;
+
+    lastGameOverSoundRef.current = resultKey;
+    if (gameState.gameResult === "WIN") {
+      playGameWin();
+      return;
+    }
+
+    playGameLoss();
+  }, [gameState?.gameOver, gameState?.gameResult, gameState?.currentRound]);
+
+  useEffect(() => {
+    if (!gameState) return;
 
     if (gameState.currentPhase !== "INVEST") {
       setIsInvestPromptOpen(false);
@@ -410,12 +670,14 @@ export default function GamePage({ onRestart }) {
   }, [gameState]);
 
   async function handleNextPhase() {
+    playUiClick();
     const updated = await nextPhase();
 
     if (updated.productionCardFinalScoreResult?.reasons?.length > 0) {
       setCardScoringPopup(updated.productionCardFinalScoreResult);
     }
 
+    playPhaseAdvance();
     setGameState(updated);
     const activeCards = await getActiveProductionCards();
     setActiveProductionCards(Array.isArray(activeCards) ? activeCards : []);
@@ -425,6 +687,7 @@ export default function GamePage({ onRestart }) {
   }
 
   async function handleEventSelection(optionIndex) {
+    playUiClick();
     setEventSelectionLoading(true);
 
     try {
@@ -446,8 +709,10 @@ export default function GamePage({ onRestart }) {
 
   async function buy(type) {
     try {
+      playUiClick();
       await buyInvestment(type);
       const updated = await getGameState();
+      playSuccess();
       setGameState(updated);
       return true;
     } catch (err) {
@@ -455,10 +720,6 @@ export default function GamePage({ onRestart }) {
       showErrorPopup(err.message);
       return false;
     }
-  }
-
-  async function handlePopupBuy(type) {
-    await buy(type);
   }
 
   async function handleBuyProductionCard(cardId) {
@@ -475,6 +736,7 @@ export default function GamePage({ onRestart }) {
     });
 
     try {
+      playUiClick();
       const result = await buyProductionCard(cardId);
 
       if (result?.reasons?.length) {
@@ -482,6 +744,7 @@ export default function GamePage({ onRestart }) {
       }
 
       const updatedState = await refreshGame();
+      playSuccess();
 
       if (
         previousMode &&
@@ -502,20 +765,30 @@ export default function GamePage({ onRestart }) {
 
   if (!gameState) return <div className="game-loading">Loading game...</div>;
 
-  const phaseCoach = getPhaseCoach(gameState.currentPhase);
+  const phaseCoach = getPhaseCoach(gameState.currentPhase, gameState);
+  const isEventChoiceHidden =
+    gameState.currentPhase === "DRAW_EVENT" && !isEventDrawModalOpen;
   const controlsDisabled =
-    gameState.currentPhase === "DRAW_EVENT" ||
+    (gameState.currentPhase === "DRAW_EVENT" && !isEventChoiceHidden) ||
     eventSelectionLoading ||
     Boolean(revealedEvent);
   const shouldSpotlightNextMove =
-    !controlsDisabled && gameState.currentPhase === "MOVE_MARKER";
+    !controlsDisabled &&
+    gameState.currentPhase === "MOVE_MARKER" &&
+    gameState.currentRound === 1;
   const controlsHeadline = shouldSpotlightNextMove
     ? `Start Round ${gameState.currentRound}`
+    : isEventChoiceHidden
+      ? "Continue to Draw Event"
     : "Ready for the next step?";
   const controlsHint = shouldSpotlightNextMove ? (
     <>
       This is the first action for the round. Click the button below to begin
       <strong>{` Round ${gameState.currentRound}`}</strong>.
+    </>
+  ) : isEventChoiceHidden ? (
+    <>
+      The event popup was closed. Reopen it with the <strong>Open Event Cards</strong> button above so you can choose the required event.
     </>
   ) : (
     <>
@@ -527,12 +800,17 @@ export default function GamePage({ onRestart }) {
     : `Continue to ${getNextPhaseLabel(gameState.currentPhase)}`;
   const controlsStatusText =
     gameState.currentPhase === "DRAW_EVENT"
-      ? "Choose an event card in the popup to unlock the next step."
+      ? isEventChoiceHidden
+        ? "Reopen the event popup above and choose one event card to continue the round."
+        : "Choose an event card in the popup to unlock the next step."
       : revealedEvent
         ? "Review the revealed event, then continue."
         : eventSelectionLoading
           ? "The selected event is being revealed."
           : `After this, the game will move to ${getNextPhaseLabel(gameState.currentPhase)}.`;
+  const handleControlsNext = isEventChoiceHidden
+    ? () => setIsEventDrawModalOpen(true)
+    : handleNextPhase;
 
   return (
     <div className="game-root">
@@ -583,6 +861,12 @@ export default function GamePage({ onRestart }) {
             <motion.div className="hero-chip game-help-chip" layout>
               <HelpButton onClick={openGuideModal} />
             </motion.div>
+            <motion.div className="hero-chip game-sound-chip" layout>
+              <SoundToggleButton
+                enabled={isSoundEnabled}
+                onToggle={handleSoundToggle}
+              />
+            </motion.div>
           </div>
         </motion.header>
 
@@ -612,7 +896,7 @@ export default function GamePage({ onRestart }) {
           </div>
         </section>
 
-        {gameState.currentPhase === "DRAW_EVENT" && (
+        {gameState.currentPhase === "DRAW_EVENT" && isEventDrawModalOpen && (
           <EventDrawModal
             options={eventOptions}
             isLoading={eventOptionsLoading}
@@ -620,6 +904,7 @@ export default function GamePage({ onRestart }) {
             error={eventOptionsError}
             onSelect={handleEventSelection}
             onRetry={loadEventOptions}
+            onClose={() => setIsEventDrawModalOpen(false)}
           />
         )}
 
@@ -640,16 +925,18 @@ export default function GamePage({ onRestart }) {
           <h2 className="phase-popup__title">Why does the board look quiet at first?</h2>
           <div className="phase-popup__reasons">
             <p>
-              The first rounds are setup rounds. Trees need time to grow before apples
-              start moving through the orchard.
-            </p>
+             The first rounds are setup rounds, as trees only produce apples after reaching 
+             field 3.
+             </p>
             <p>
-              The normal flow is: <strong>Harvest in round 3</strong>,{" "}
-              <strong>Deliver in round 4</strong>, and <strong>Sell in round 5</strong>.
-            </p>
-            <p>
-              For now, focus on building the orchard by buying trees, crates, and sales
-              stands so later rounds have a smooth apple flow.
+             Apples move step by step through the plantation: harvested during the 
+             harvest phase, moved to transport during delivery, 
+             placed in the sales area during sales, 
+             and finally sold in the sell phase. 
+             </p>
+             <p>
+             Early rounds should focus on buying trees, crates, and sales stands to
+              prepare for later production.
             </p>
           </div>
           <button
@@ -658,6 +945,46 @@ export default function GamePage({ onRestart }) {
           >
             I understand
           </button>
+        </AnimatedModal>
+
+        <AnimatedModal
+          isOpen={Boolean(quietPhasePopup)}
+          onClose={() => setQuietPhasePopup(null)}
+          backdropClassName="phase-popup__backdrop"
+          panelClassName="phase-popup"
+        >
+          {quietPhasePopup && (
+            <>
+              <div className="phase-popup__topbar">
+                <div>
+                  <div className="phase-popup__eyebrow">{quietPhasePopup.eyebrow}</div>
+                  <h2 className="phase-popup__title">{quietPhasePopup.title}</h2>
+                </div>
+
+                <button
+                  type="button"
+                  className="phase-popup__iconClose"
+                  onClick={() => setQuietPhasePopup(null)}
+                  aria-label="Close quiet phase explanation"
+                >
+                  x
+                </button>
+              </div>
+
+              <div className="phase-popup__reasons">
+                {quietPhasePopup.reasons.map((reason) => (
+                  <p key={reason}>{reason}</p>
+                ))}
+              </div>
+
+              <button
+                className="phase-popup__button"
+                onClick={() => setQuietPhasePopup(null)}
+              >
+                I understand
+              </button>
+            </>
+          )}
         </AnimatedModal>
 
         <AnimatedModal
@@ -778,29 +1105,51 @@ export default function GamePage({ onRestart }) {
 
           <div className="phase-popup__reasons">
             <p>
-              This is your chance to buy orchard upgrades before the round moves on.
+              This is the main buying round before the game moves on.
             </p>
             <p>
-              You can choose a quick upgrade here, or close this and inspect production
-              cards further down the page.
+              Spend your <strong>{gameState.money} money</strong> across both kinds of investments:
+              orchard upgrades and production cards.
             </p>
           </div>
 
-          <div className="phase-popup__embedded-panel">
-            <InvestmentQuickPanel
-              money={gameState.money}
-              onBuySeedling={() => handlePopupBuy("BUY_SEEDLING")}
-              onBuyPreGrown={() => handlePopupBuy("BUY_PRE_GROWN_TREE")}
-              onBuyCrate={() => handlePopupBuy("BUY_CRATE")}
-              onBuyStand={() => handlePopupBuy("BUY_SALES_STAND")}
-            />
+          <div className="phase-popup__choiceGrid">
+            <button
+              type="button"
+              className="phase-popup__choiceCard"
+              onClick={() => {
+                setIsInvestPromptOpen(false);
+                focusInvestSection("farm-investments");
+              }}
+            >
+              <div className="phase-popup__choiceEyebrow">Basic Upgrades</div>
+              <div className="phase-popup__choiceTitle">Farm Investments</div>
+              <p className="phase-popup__choiceText">
+                Buy seedlings, trees, crates, and sales stands to improve the orchard flow.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              className="phase-popup__choiceCard phase-popup__choiceCard--accent"
+              onClick={() => {
+                setIsInvestPromptOpen(false);
+                focusInvestSection("production-card-market");
+              }}
+            >
+              <div className="phase-popup__choiceEyebrow">Special Upgrades</div>
+              <div className="phase-popup__choiceTitle">Production Cards</div>
+              <p className="phase-popup__choiceText">
+                Inspect these too. They can create stronger long-term effects than basic upgrades.
+              </p>
+            </button>
           </div>
 
           <button
             className="phase-popup__button phase-popup__button--secondary"
             onClick={() => setIsInvestPromptOpen(false)}
           >
-            Close
+            Ok
           </button>
         </AnimatedModal>
 
@@ -817,7 +1166,10 @@ export default function GamePage({ onRestart }) {
             />
 
             {gameState.currentPhase === "INVEST" && (
-              <div className="full-width">
+              <div
+                id="farm-investments"
+                className="full-width invest-phase__section invest-phase__section--farm"
+              >
                 <InvestmentPanel
                   phase={gameState.currentPhase}
                   money={gameState.money}
@@ -831,24 +1183,6 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <aside className="sidebar">
-            {gameState.currentPhase === "INVEST" && (
-              <motion.div
-                className="panel panel--soft"
-                key={`invest-quick-${gameState.money}`}
-                initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
-              >
-                <InvestmentQuickPanel
-                  money={gameState.money}
-                  onBuySeedling={() => buy("BUY_SEEDLING")}
-                  onBuyPreGrown={() => buy("BUY_PRE_GROWN_TREE")}
-                  onBuyCrate={() => buy("BUY_CRATE")}
-                  onBuyStand={() => buy("BUY_SALES_STAND")}
-                />
-              </motion.div>
-            )}
-
             <motion.div
               className={`panel panel--soft${shouldSpotlightNextMove ? " panel--next-move" : ""}`}
               key={`controls-${gameState.currentPhase}`}
@@ -861,7 +1195,7 @@ export default function GamePage({ onRestart }) {
               </div>
               <Controls
                 phase={gameState.currentPhase}
-                onNextPhase={handleNextPhase}
+                onNextPhase={handleControlsNext}
                 buttonLabel={controlsButtonLabel}
                 statusText={controlsStatusText}
                 disableNextPhase={controlsDisabled}
@@ -895,7 +1229,10 @@ export default function GamePage({ onRestart }) {
           </aside>
         </div>
 
-        <div className="full-width">
+        <div
+          id="production-card-market"
+          className={`full-width${gameState.currentPhase === "INVEST" ? " invest-phase__section invest-phase__section--cards" : ""}`}
+        >
           <Market
             market={market}
             mode={gameState.farmingMode}

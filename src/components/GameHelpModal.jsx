@@ -321,7 +321,7 @@ export default function GameHelpModal({
                       >
                         <div className="game-help__phaseTop">
                           <span className="game-help__phaseBadge">
-                            {phase.icon || `P${phase.index + 1}`}
+                            {phase.icon || `Step ${phase.index + 1}`}
                           </span>
                           <div>
                             <h3>{phase.title}</h3>
@@ -356,10 +356,10 @@ export default function GameHelpModal({
               </div>
 
               <div className="game-help__sectionTitle">Turn Steps</div>
-              <p className="game-help__body">
-                Use this simpler order to understand what happens in a normal round and where your attention should go.
-              </p>
-              <div className="game-help__stepList">
+                <p className="game-help__body">
+                  Use this simpler order to understand what happens in a normal round and where your attention should go.
+                </p>
+              {/* <div className="game-help__stepList">
                 {guideSteps.map((step) => {
                   const isCurrent = step.key && step.key === currentPhase;
                   return (
@@ -381,7 +381,7 @@ export default function GameHelpModal({
                     </article>
                   );
                 })}
-              </div>
+              </div> */}
             </section>
           ) : (
             <>

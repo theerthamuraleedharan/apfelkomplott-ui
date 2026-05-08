@@ -3,7 +3,7 @@ import "./StartScreen.css";
 
 const highlights = [
   "Strategic orchard management",
-  "Organic vs. conventional tradeoffs",
+  "Organic vs. Conventional",
   "Research-focused game prototype",
 ];
 
@@ -18,14 +18,6 @@ export default function StartScreen({ onPlay }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        {/* <motion.div
-          className="start-screen__eyebrow"
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-        >
-          Master Thesis Prototype
-        </motion.div> */}
 
         <motion.h1
           className="start-screen__title"
@@ -84,9 +76,8 @@ export default function StartScreen({ onPlay }) {
           <div className="start-screen__panelLabel">Simulation Focus</div>
           <h2>Manage the orchard across multiple rounds and competing priorities.</h2>
           <p>
-            Balance economic output with environmental and health outcomes while
-            reacting to production cards, market opportunities, and phase-based
-            decisions.
+            The players work together to build an apple orchard and are 
+            required to consider ecological, economic and health aspects.
           </p>
 
           <div className="start-screen__metrics">

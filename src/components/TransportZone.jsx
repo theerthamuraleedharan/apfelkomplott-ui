@@ -5,7 +5,7 @@ export default function TransportZone({ plantation }) {
     <div className="transportZone">
       <div className="zoneSection__header">
         <div>
-          <h2 className="zoneSection__title">Transport</h2>
+          <h2 className="zoneSection__title">Transport Area</h2>
           <p className="zoneSection__subtitle">
             Crates hold apples that are on the way to market.
           </p>

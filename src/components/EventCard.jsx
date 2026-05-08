@@ -22,6 +22,7 @@ export function EventDrawModal({
   error,
   onSelect,
   onRetry,
+  onClose,
 }) {
   const reduceMotion = useReducedMotion();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -29,22 +30,32 @@ export function EventDrawModal({
   return (
     <AnimatedModal
       isOpen={true}
-      onClose={() => {}}
+      onClose={onClose}
       backdropClassName="event-popup__backdrop"
       panelClassName="event-popup event-popup--draw"
     >
         <div className="event-popup__topRow">
           <h3 className="event-popup__eyebrow">Draw Event</h3>
-          <button
-            type="button"
-            className="event-popup__infoButton"
-            onClick={() => setIsHelpOpen((open) => !open)}
-            aria-expanded={isHelpOpen}
-            aria-controls="event-card-help"
-            title="What is an event card?"
-          >
-            i
-          </button>
+          <div className="event-popup__topActions">
+            <button
+              type="button"
+              className="event-popup__infoButton"
+              onClick={() => setIsHelpOpen((open) => !open)}
+              aria-expanded={isHelpOpen}
+              aria-controls="event-card-help"
+              title="What is an event card?"
+            >
+              i
+            </button>
+            <button
+              type="button"
+              className="event-popup__close event-popup__close--inline"
+              onClick={onClose}
+              aria-label="Close event popup"
+            >
+              x
+            </button>
+          </div>
         </div>
         <h4 className="event-popup__title">Choose a face-down event card</h4>
         <p className="event-popup__description">
@@ -135,6 +146,15 @@ export default function EventRevealModal({ event, onContinue }) {
         transition={{ duration: reduceMotion ? 0 : 0.3, ease: "easeOut" }}
         style={{ transformStyle: "preserve-3d" }}
       >
+        <button
+          type="button"
+          className="event-popup__close"
+          onClick={onContinue}
+          aria-label="Close event card"
+        >
+          x
+        </button>
+
         <div className="event-popup__sparkles" aria-hidden="true">
           <span className="event-popup__sparkle event-popup__sparkle--one">✦</span>
           <span className="event-popup__sparkle event-popup__sparkle--two">✿</span>

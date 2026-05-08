@@ -5,7 +5,7 @@ export default function SalesZone({ plantation }) {
     <div className="salesZone">
       <div className="zoneSection__header">
         <div>
-          <h2 className="zoneSection__title">Sales</h2>
+          <h2 className="zoneSection__title">Sales Area</h2>
           <p className="zoneSection__subtitle">
             Sales stands are where ready apples wait to be sold.
           </p>
