@@ -207,7 +207,6 @@
 
 .game-help__section {
   display: grid;
-  gap: 12px;
 }
 
 .game-help__list,

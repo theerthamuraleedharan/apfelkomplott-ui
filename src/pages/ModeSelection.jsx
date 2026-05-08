@@ -30,12 +30,24 @@ const modeCards = [
   },
 ];
 
-export default function ModeSelection({ onSelect, onBack }) {
+export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
   return (
     <div className="mode-page">
       <div className="mode-page__backdrop" />
 
-      <button className="mode-page__back" onClick={onBack}>
+      {isLoading && (
+        <div className="mode-page__loadingOverlay" role="status" aria-live="polite">
+          <div className="mode-page__loadingCard">
+            <div className="mode-page__spinner" aria-hidden="true" />
+            <h2 className="mode-page__loadingTitle">Preparing the orchard</h2>
+            <p className="mode-page__loadingText">
+              The game board is loading. This can take a few seconds.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <button className="mode-page__back" onClick={onBack} disabled={isLoading}>
         Back
       </button>
 
@@ -48,9 +60,9 @@ export default function ModeSelection({ onSelect, onBack }) {
         <div className="mode-page__eyebrow">Strategy Selection</div>
         <h1 className="mode-page__title">Choose the orchard model you want to test.</h1>
         <p className="mode-page__subtitle">
-          Each mode changes the balance between output, environmental impact,
-          and long-term system behavior. Select the strategy that matches the
-          scenario you want to explore.
+          Choose a strategy for your apple plantation: organic or conventional farming. 
+          This choice affects the available production options and decisions. 
+          You can change the strategy later in the game by converting the plantation to a different farming mode.
         </p>
       </motion.div>
 
@@ -60,6 +72,7 @@ export default function ModeSelection({ onSelect, onBack }) {
             key={mode.id}
             type="button"
             className={mode.className}
+            disabled={isLoading}
             onClick={() => onSelect(mode.id)}
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
@@ -81,7 +94,7 @@ export default function ModeSelection({ onSelect, onBack }) {
             </div>
 
             <div className="mode-card__footer">
-              <span>Select Mode</span>
+              <span>{isLoading ? "Loading..." : "Select Mode"}</span>
             </div>
           </motion.button>
         ))}

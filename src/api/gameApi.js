@@ -11,6 +11,26 @@ const API_BASE_URL = normalizeBaseUrl(
 const BASE_URL = `${API_BASE_URL}/game`;
 export const ASSET_BASE_URL = API_BASE_URL;
 
+function extractErrorMessage(text, fallbackMessage = "Something went wrong.") {
+  if (!text) return fallbackMessage;
+
+  try {
+    const parsed = JSON.parse(text);
+
+    if (typeof parsed?.message === "string" && parsed.message.trim()) {
+      return parsed.message.trim();
+    }
+
+    if (typeof parsed?.error === "string" && parsed.error.trim()) {
+      return parsed.error.trim();
+    }
+  } catch {
+    // Keep the original text when the backend returned a plain string.
+  }
+
+  return text;
+}
+
 /* ---------- GAME ---------- */
 
 export async function startGame(mode) {
@@ -21,7 +41,7 @@ export async function startGame(mode) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    throw new Error(extractErrorMessage(text, "Unable to start the game."));
   }
 
   return await res.json();
@@ -30,7 +50,7 @@ export async function startGame(mode) {
 async function parseJsonResponse(res, fallbackMessage) {
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || fallbackMessage);
+    throw new Error(extractErrorMessage(text, fallbackMessage));
   }
 
   const contentType = res.headers.get("content-type") ?? "";
@@ -59,7 +79,7 @@ export async function getEventOptions() {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    throw new Error(extractErrorMessage(text, "Unable to load event choices."));
   }
 
   const contentType = res.headers.get("content-type") ?? "";
@@ -90,7 +110,7 @@ export async function selectEventOption(optionIndex) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    throw new Error(extractErrorMessage(text, "Unable to reveal the selected event."));
   }
 
   return await res.json();
@@ -115,7 +135,7 @@ export async function cardScoring() {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    throw new Error(extractErrorMessage(text, "Unable to score production cards."));
   }
 
   return await res.json();
@@ -130,7 +150,7 @@ export async function buyProductionCard(cardId) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text);
+    throw new Error(extractErrorMessage(text, "Unable to buy the selected production card."));
   }
 
   return await res.json();
@@ -147,7 +167,7 @@ export async function buyInvestment(type) {
 
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(errorText);
+    throw new Error(extractErrorMessage(errorText, "Unable to buy this investment."));
   }
 }
 

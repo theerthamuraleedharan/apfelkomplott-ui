@@ -5,6 +5,7 @@ import ProductionZone from "./ProductionZone";
 import ActiveCardsPanel from "./ActiveCardsPanel";
 import AnimatedModal from "./AnimatedModal";
 import AnimatedNumber from "./AnimatedNumber";
+import { playSellCelebration } from "../utils/soundManager";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -47,6 +48,7 @@ export default function BoardLayout({
       gameState.currentPhase === "DELIVER" &&
       gameState.lastSellResult?.applesSold > 0
     ) {
+      playSellCelebration();
       setShowSellPopup(true);
     }
   }, [gameState.currentPhase, gameState.lastSellResult?.applesSold]);

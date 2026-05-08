@@ -88,12 +88,15 @@ export default function ProductionZone({
   }, [phase, plantation]);
 
   return (
-    <div className="zone production">
+    <div className="productionZone">
       <div className="production-header">
         <div>
           <h3>Production Disk</h3>
           <p>Fields 3-6 produce apples. Trees age by one field every rotation.</p>
         </div>
+        {phase === "ROTATE" && (
+          <div className="production-rotationBadge">Rotating orchard...</div>
+        )}
         {harvestLossBadge && (
           <div className="production-warning" title={harvestLossText}>
             <span className="production-warning__label">Weather Effect</span>
@@ -103,7 +106,10 @@ export default function ProductionZone({
       </div>
 
       <div className="production-disk-layout">
-        <div className="production-disk" aria-label="Plantation rotation disk">
+        <div
+          className={`production-disk${phase === "ROTATE" ? " is-rotating" : ""}`}
+          aria-label="Plantation rotation disk"
+        >
           <div className="disk-base">
             {fields.map((field) => (
               <div
