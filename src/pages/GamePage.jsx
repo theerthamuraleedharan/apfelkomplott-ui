@@ -1145,12 +1145,12 @@ export default function GamePage({ onRestart }) {
             </button>
           </div>
 
-          <button
+          {/* <button
             className="phase-popup__button phase-popup__button--secondary"
             onClick={() => setIsInvestPromptOpen(false)}
           >
             Ok
-          </button>
+          </button> */}
         </AnimatedModal>
 
         <div className={`game-layout${shouldSpotlightNextMove ? " game-layout--spotlight" : ""}`}>
