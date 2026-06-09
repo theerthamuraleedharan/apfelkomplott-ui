@@ -1,5 +1,18 @@
 import "./SalesArea.css";
 
+/**
+ * Sales-zone panel for the main board layout.
+ *
+ * The component summarizes the available sales stands and lists apples currently
+ * waiting in each stand. It helps players see whether the orchard can convert
+ * delivered apples into money.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object} props.plantation - Plantation state with sales stands and
+ * apples.
+ * @returns {JSX.Element} Sales area summary cards.
+ */
 export default function SalesZone({ plantation }) {
   return (
     <div className="salesZone">

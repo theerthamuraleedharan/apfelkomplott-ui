@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion as Motion, useReducedMotion } from "framer-motion";
 import TransportZone from "./TransportZone";
 import SalesZone from "./SalesZone";
 import ProductionZone from "./ProductionZone";
@@ -11,9 +11,23 @@ import { useEffect, useRef, useState } from "react";
 
 import "./BoardLayout.css";
 
+/**
+ * Main animated board layout for the game page.
+ *
+ * The layout combines transport, sales, production, and active production-card
+ * zones. It also listens for backend result objects and opens summary modals for
+ * apple sales and intermediate scoring so players can connect board changes to
+ * their score and money consequences.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object} props.gameState - Current backend game-state snapshot.
+ * @param {Array<object>} props.activeProductionCards - Cards currently affecting
+ * or scheduled to affect the orchard.
+ * @returns {JSX.Element} Responsive board grid with result modals.
+ */
 export default function BoardLayout({
   gameState,
-  animationPhase,
   activeProductionCards,
 }) {
   const [showSellPopup, setShowSellPopup] = useState(false);
@@ -38,10 +52,10 @@ export default function BoardLayout({
 
       if (lastShownScoreRef.current !== scoreKey) {
         lastShownScoreRef.current = scoreKey;
-        setShowScorePopup(true);
+        queueMicrotask(() => setShowScorePopup(true));
       }
     }
-  }, [gameState.lastScoreResult]);
+  }, [scoringResult]);
 
   useEffect(() => {
     if (
@@ -49,13 +63,13 @@ export default function BoardLayout({
       gameState.lastSellResult?.applesSold > 0
     ) {
       playSellCelebration();
-      setShowSellPopup(true);
+      queueMicrotask(() => setShowSellPopup(true));
     }
   }, [gameState.currentPhase, gameState.lastSellResult?.applesSold]);
 
   return (
     <div className="board-grid">
-      <motion.div
+      <Motion.div
         className="zone transport"
         key={`transport-${gameState.currentPhase}`}
         initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
@@ -63,9 +77,9 @@ export default function BoardLayout({
         transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
       >
         <TransportZone plantation={gameState.plantation} />
-      </motion.div>
+      </Motion.div>
 
-      <motion.div
+      <Motion.div
         className="zone sales"
         key={`sales-${gameState.currentPhase}`}
         initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
@@ -73,9 +87,9 @@ export default function BoardLayout({
         transition={{ duration: reduceMotion ? 0 : 0.24, ease: "easeOut" }}
       >
         <SalesZone plantation={gameState.plantation} />
-      </motion.div>
+      </Motion.div>
 
-      <motion.div
+      <Motion.div
         className="zone production"
         key={`production-${gameState.currentPhase}`}
         initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
@@ -88,9 +102,9 @@ export default function BoardLayout({
           round={gameState.currentRound}
           lastEventResult={gameState.lastEventResult}
         />
-      </motion.div>
+      </Motion.div>
 
-      <motion.div
+      <Motion.div
         className="zone active-cards-zone"
         key={`active-cards-${gameState.currentRound}-${activeProductionCards?.length ?? 0}`}
         initial={reduceMotion ? false : { opacity: 0.88, y: 8 }}
@@ -102,7 +116,7 @@ export default function BoardLayout({
           currentRound={gameState.currentRound}
           variant="embedded"
         />
-      </motion.div>
+      </Motion.div>
 
       <AnimatedModal
         isOpen={showSellPopup && Boolean(gameState.lastSellResult)}

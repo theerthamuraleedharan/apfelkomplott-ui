@@ -1,5 +1,5 @@
 import "./ScoreBoard.css";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion as Motion, useReducedMotion } from "framer-motion";
 import { formatSaleBonusPerApple } from "../utils/saleBonus";
 import AnimatedNumber from "./AnimatedNumber";
 import { useEffect, useState } from "react";
@@ -16,6 +16,24 @@ function toPercent(value) {
   return ((v - MIN) / (MAX - MIN)) * 100;
 }
 
+/**
+ * Heads-up score display for money and the three impact tracks.
+ *
+ * The board shows economy, environment, and health values on bounded bars,
+ * animates money changes, and displays contextual badges for ongoing sale
+ * bonuses or temporary production-card cost penalties.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object} props.score - Score-track values.
+ * @param {number} props.money - Current player money.
+ * @param {number} [props.currentSaleBonusPerApple=0] - Ongoing sale bonus.
+ * @param {number} [props.waterManagementPenalty=0] - Current water-management
+ * cost increase.
+ * @param {number} [props.shadeNetsPenalty=0] - Current shade-nets cost
+ * increase.
+ * @returns {JSX.Element} Score and money HUD.
+ */
 export default function ScoreBoard({
   score,
   money,
@@ -35,7 +53,7 @@ export default function ScoreBoard({
   useEffect(() => {
     if (reduceMotion) return undefined;
 
-    setMoneyPulse(true);
+    queueMicrotask(() => setMoneyPulse(true));
     const timer = setTimeout(() => setMoneyPulse(false), 700);
     return () => clearTimeout(timer);
   }, [money, reduceMotion]);
@@ -45,7 +63,7 @@ export default function ScoreBoard({
       <div className="scoreHud__header">
         <div className="scoreHud__title">Scores</div>
 
-        <motion.div
+        <Motion.div
           className={`moneyBadge${moneyPulse ? " moneyBadge--pulse" : ""}`}
           title="Money"
           animate={
@@ -59,12 +77,12 @@ export default function ScoreBoard({
         >
           <span className="moneyBadge__icon">Cash</span>
           <AnimatedNumber className="moneyBadge__value" value={money} />
-        </motion.div>
+        </Motion.div>
       </div>
 
       <AnimatePresence initial={false}>
         {hasInfoBadges && (
-          <motion.div
+          <Motion.div
             className="bonusBadgeList"
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -94,7 +112,7 @@ export default function ScoreBoard({
                 value={`+${shadeNetsPenalty} money`}
               />
             )}
-          </motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
 

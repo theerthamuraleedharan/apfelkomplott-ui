@@ -1,5 +1,21 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion as Motion, useReducedMotion } from "framer-motion";
 
+/**
+ * Reusable modal shell with animated backdrop and dialog panel.
+ *
+ * The modal closes when the backdrop is clicked, keeps inner clicks from
+ * propagating to the backdrop, and respects the user's reduced-motion setting.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {boolean} props.isOpen - Whether the modal should be rendered.
+ * @param {() => void} props.onClose - Callback used to close the modal.
+ * @param {string} props.backdropClassName - CSS class for the overlay.
+ * @param {string} props.panelClassName - CSS class for the dialog panel.
+ * @param {React.ReactNode} props.children - Modal body content.
+ * @returns {JSX.Element} Animated modal markup, or no visible content when
+ * closed.
+ */
 export default function AnimatedModal({
   isOpen,
   onClose,
@@ -12,7 +28,7 @@ export default function AnimatedModal({
   return (
     <AnimatePresence>
       {isOpen ? (
-        <motion.div
+        <Motion.div
           className={backdropClassName}
           onClick={onClose}
           initial={{ opacity: 0 }}
@@ -20,7 +36,7 @@ export default function AnimatedModal({
           exit={{ opacity: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.18, ease: "easeOut" }}
         >
-          <motion.div
+          <Motion.div
             className={panelClassName}
             role="dialog"
             aria-modal="true"
@@ -42,8 +58,8 @@ export default function AnimatedModal({
             }}
           >
             {children}
-          </motion.div>
-        </motion.div>
+          </Motion.div>
+        </Motion.div>
       ) : null}
     </AnimatePresence>
   );

@@ -27,6 +27,19 @@ const LABELS = {
   CARD_SCORING: "Cards",
 };
 
+/**
+ * Round and phase progress visualization for the game header.
+ *
+ * The component highlights the active phase and marks earlier phases as
+ * completed, helping players understand where they are in the ten-step round
+ * sequence.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {string} props.currentPhase - Active phase identifier.
+ * @param {number} props.round - Current round number.
+ * @returns {JSX.Element} Combined round track and phase progress bar.
+ */
 export default function PhaseProgressBar({ currentPhase, round }) {
   return (
     <div className="phase-bar">

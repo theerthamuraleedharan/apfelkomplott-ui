@@ -109,6 +109,21 @@ function isCardStillActive(card, currentRound) {
   return true;
 }
 
+/**
+ * Collapsible overview of production cards that still affect future rounds.
+ *
+ * The panel filters expired cards, summarizes each active card, and lets the
+ * player expand a card to inspect remaining years and score effects. This keeps
+ * long-term decisions visible while the board is being played.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {Array<object>} [props.activeCards=[]] - Active or scheduled production
+ * cards returned by the backend.
+ * @param {number} props.currentRound - Current round used to hide expired cards.
+ * @param {string} [props.variant="default"] - Visual variant class suffix.
+ * @returns {JSX.Element} Active-card timeline panel.
+ */
 export default function ActiveCardsPanel({
   activeCards = [],
   currentRound,
@@ -168,6 +183,16 @@ export default function ActiveCardsPanel({
   );
 }
 
+/**
+ * Expandable row for a single active production card.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.card - Production-card data to display.
+ * @param {number} props.index - Position of the card in the visible list.
+ * @param {string|null} props.expandedCardKey - Currently expanded card key.
+ * @param {(cardKey: string|null) => void} props.onToggle - Expansion callback.
+ * @returns {JSX.Element} Active production-card summary and details.
+ */
 function ActiveCardItem({ card, index, expandedCardKey, onToggle }) {
   const cardKey = getCardKey(card, index);
   const isExpanded = expandedCardKey === cardKey;

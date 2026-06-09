@@ -1,6 +1,6 @@
 import "./EventCard.css";
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion as Motion, useReducedMotion } from "framer-motion";
 import {
   formatSaleBonusMoneyLine,
   formatSaleBonusPerApple,
@@ -15,6 +15,24 @@ const EVENT_CARD_HELP_POINTS = [
   "Read the revealed event carefully before moving on, because it can affect what choices make sense in the next phases.",
 ];
 
+/**
+ * Modal for choosing one hidden event card during the DRAW_EVENT phase.
+ *
+ * The modal presents face-down choices and keeps the phase mandatory by making
+ * the parent page wait for `onSelect` before phase advancement is enabled. It
+ * also includes inline help for explaining event-card mechanics.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {Array<object>} props.options - Event options returned by the backend.
+ * @param {boolean} props.isLoading - Whether options are loading.
+ * @param {boolean} props.isSubmitting - Whether a selection is being revealed.
+ * @param {string} props.error - Error message for failed option loading.
+ * @param {(optionIndex: number) => void} props.onSelect - Selection callback.
+ * @param {() => void} props.onRetry - Retry callback for loading failures.
+ * @param {() => void} props.onClose - Callback for dismissing the modal.
+ * @returns {JSX.Element} Event-card draw modal.
+ */
 export function EventDrawModal({
   options,
   isLoading,
@@ -67,7 +85,7 @@ export function EventDrawModal({
 
         <AnimatePresence initial={false}>
           {isHelpOpen && (
-            <motion.div
+            <Motion.div
               id="event-card-help"
               className="event-popup__help"
               initial={reduceMotion ? false : { opacity: 0, y: -6 }}
@@ -79,14 +97,14 @@ export function EventDrawModal({
               {EVENT_CARD_HELP_POINTS.map((point) => (
                 <p key={point}>{point}</p>
               ))}
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
         {options.length > 0 && (
           <div className="event-draw__grid">
             {options.map((option) => (
-              <motion.button
+              <Motion.button
                 key={option.optionIndex}
                 type="button"
                 className="event-draw__card"
@@ -105,7 +123,7 @@ export function EventDrawModal({
                 <span className="event-draw__badge">Face Down</span>
                 <span className="event-draw__mark">?</span>
                 <span className="event-draw__label">Event Card</span>
-              </motion.button>
+              </Motion.button>
             ))}
           </div>
         )}
@@ -124,6 +142,20 @@ export function EventDrawModal({
   );
 }
 
+/**
+ * Modal for displaying the event card revealed after selection.
+ *
+ * The reveal shows the event name, description, media, score or sale-bonus
+ * effects, and upcoming harvest impacts. The parent page keeps phase controls
+ * blocked until the player continues from this modal.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object} props.event - Normalized event result to display.
+ * @param {() => void} props.onContinue - Callback fired when the player has
+ * reviewed the event.
+ * @returns {JSX.Element} Revealed event-card modal.
+ */
 export default function EventRevealModal({ event, onContinue }) {
   const reduceMotion = useReducedMotion();
   const hasSaleBonusIncrease = (event.saleBonusPerAppleChange ?? 0) > 0;
@@ -139,7 +171,7 @@ export default function EventRevealModal({ event, onContinue }) {
       backdropClassName="event-popup__backdrop"
       panelClassName="event-popup event-popup--reveal"
     >
-      <motion.div
+      <Motion.div
         className="event-popup__revealInner"
         initial={reduceMotion ? false : { rotateY: 10, opacity: 0 }}
         animate={{ rotateY: 0, opacity: 1 }}
@@ -161,33 +193,33 @@ export default function EventRevealModal({ event, onContinue }) {
           <span className="event-popup__sparkle event-popup__sparkle--three">✦</span>
         </div>
 
-        <motion.h3
+        <Motion.h3
           className="event-popup__eyebrow"
           initial={reduceMotion ? false : { opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.22, ease: "easeOut" }}
         >
           Event Card
-        </motion.h3>
-        <motion.h4
+        </Motion.h3>
+        <Motion.h4
           className="event-popup__title"
           initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut", delay: 0.03 }}
         >
           {event.cardName}
-        </motion.h4>
-        <motion.p
+        </Motion.h4>
+        <Motion.p
           className="event-popup__description"
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.28, ease: "easeOut", delay: 0.06 }}
         >
           {event.description}
-        </motion.p>
+        </Motion.p>
 
         {mediaItems.length > 0 && (
-          <motion.div
+          <Motion.div
             className="event-popup__media"
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -204,12 +236,12 @@ export default function EventRevealModal({ event, onContinue }) {
                 />
               </div>
             ))}
-          </motion.div>
+          </Motion.div>
         )}
 
         <AnimatePresence initial={false}>
         {hasSaleBonusIncrease && (
-          <motion.div
+          <Motion.div
             className="event-popup__bonus"
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -228,13 +260,13 @@ export default function EventRevealModal({ event, onContinue }) {
                 {formatSaleBonusPerApple(event.resultingSaleBonusPerApple)}
               </strong>
             </p>
-          </motion.div>
+          </Motion.div>
         )}
         </AnimatePresence>
 
         <AnimatePresence initial={false}>
         {harvestLossText && (
-          <motion.div
+          <Motion.div
             className="event-popup__bonus event-popup__bonus--warning"
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -244,12 +276,12 @@ export default function EventRevealModal({ event, onContinue }) {
             <p>
               Upcoming harvest impact: <strong>{harvestLossText}</strong>
             </p>
-          </motion.div>
+          </Motion.div>
         )}
         </AnimatePresence>
 
         {(event.effects ?? []).length > 0 && (
-          <motion.div
+          <Motion.div
             className="event-popup__effects"
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -258,18 +290,18 @@ export default function EventRevealModal({ event, onContinue }) {
             {(event.effects ?? []).map((effect, index) => (
               <p key={`${event.cardId ?? event.cardName}-${index}`}>{effect}</p>
             ))}
-          </motion.div>
+          </Motion.div>
         )}
 
-        <motion.button
+        <Motion.button
           className="event-popup__button"
           onClick={onContinue}
           whileHover={reduceMotion ? undefined : { y: -2, scale: 1.02 }}
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
         >
           Continue
-        </motion.button>
-      </motion.div>
+        </Motion.button>
+      </Motion.div>
     </AnimatedModal>
   );
 }

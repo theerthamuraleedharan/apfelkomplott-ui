@@ -1,5 +1,14 @@
 import "./SoundToggle.css";
 
+/**
+ * Button for enabling or muting interface sound effects.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {boolean} props.enabled - Whether sound is currently enabled.
+ * @param {() => void} props.onToggle - Callback for toggling the sound setting.
+ * @returns {JSX.Element} Sound preference toggle.
+ */
 export default function SoundToggleButton({ enabled, onToggle }) {
   return (
     <button

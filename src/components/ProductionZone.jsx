@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import "./ProductionZone.css";
 import { formatHarvestLossBadge, formatHarvestLossText } from "../utils/eventEffects";
 
@@ -41,24 +40,31 @@ function getTreeOffsets(index) {
   return positions[index] ?? { x: 0, y: 0 };
 }
 
+/**
+ * Visual production disk for tree aging, harvesting, and rotation.
+ *
+ * The component positions trees around a six-field disk, animates the rotation
+ * phase, and preserves a pre-rotation snapshot so disappearing trees remain
+ * understandable while the disk moves. Event-based harvest loss warnings are
+ * displayed in the header when active.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object|null} props.plantation - Plantation state with tree data.
+ * @param {string} props.phase - Current phase identifier.
+ * @param {number} props.round - Current round number.
+ * @param {object|null} props.lastEventResult - Latest event result that may
+ * affect harvest display.
+ * @returns {JSX.Element} Animated production-disk zone.
+ */
 export default function ProductionZone({
   plantation,
   phase,
   round,
   lastEventResult,
 }) {
-  const previousPlantationRef = useRef(null);
-  const previousPhaseRef = useRef(null);
-  const rotateSnapshotRef = useRef(null);
-
   if (!plantation || !plantation.trees) {
     return <div className="zone production">Production (loading)</div>;
-  }
-
-  if (phase === "ROTATE" && previousPhaseRef.current !== "ROTATE") {
-    rotateSnapshotRef.current = previousPlantationRef.current ?? plantation;
-  } else if (phase !== "ROTATE") {
-    rotateSnapshotRef.current = null;
   }
 
   const completedRotations = phasesAfterRotation.has(phase)
@@ -75,17 +81,10 @@ export default function ProductionZone({
   const visiblePlantation =
     phase === "ROTATE"
       ? {
-          ...(rotateSnapshotRef.current ?? plantation),
-          trees: (rotateSnapshotRef.current ?? plantation).trees.filter(
-            (tree) => tree.fieldPosition !== 6
-          ),
+          ...plantation,
+          trees: plantation.trees.filter((tree) => tree.fieldPosition !== 6),
         }
       : plantation;
-
-  useEffect(() => {
-    previousPlantationRef.current = plantation;
-    previousPhaseRef.current = phase;
-  }, [phase, plantation]);
 
   return (
     <div className="productionZone">
