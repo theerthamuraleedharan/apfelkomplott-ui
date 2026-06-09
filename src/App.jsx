@@ -7,6 +7,16 @@ import { startGame as apiStartGame } from "./api/gameApi";
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
+/**
+ * Root application component that defines the game navigation flow.
+ *
+ * The component routes the player from the start screen to mode selection and
+ * then into the playable game. It also starts a new backend game session for the
+ * selected farming mode and resets local help state when a fresh game begins.
+ *
+ * @component
+ * @returns {JSX.Element} The route configuration for the Apfelkomplott UI.
+ */
 function App() {
   const navigate = useNavigate();
   const [gameMode, setGameMode] = useState(null);

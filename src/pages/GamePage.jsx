@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion as Motion, useReducedMotion } from "framer-motion";
 import "./GamePage.css";
 
 import {
@@ -15,7 +15,6 @@ import {
 } from "../api/gameApi";
 
 import BoardLayout from "../components/BoardLayout";
-import ActiveCardsPanel from "../components/ActiveCardsPanel";
 import Market from "../components/Market";
 import ScoreBoard from "../components/ScoreBoard";
 import Controls from "../components/Controls";
@@ -43,6 +42,12 @@ import {
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
+/**
+ * Creates a randomized copy of a card list without mutating the original array.
+ *
+ * @param {Array<object>} cards - Cards that should be displayed in random order.
+ * @returns {Array<object>} A shuffled copy of the provided cards.
+ */
 function shuffleCards(cards) {
   const copy = [...cards];
 
@@ -54,6 +59,19 @@ function shuffleCards(cards) {
   return copy;
 }
 
+/**
+ * Builds the five visible production-card market slots for the game screen.
+ *
+ * The market favors the designed distribution of three short-term cards and two
+ * long-term cards. During normal phase changes, cards that are still available
+ * keep their previous slot so the interface remains spatially stable for the
+ * player. During a refill phase, the caller passes an empty previous slot list
+ * to force a fresh market layout.
+ *
+ * @param {Array<object>} cards - Production cards returned by the backend.
+ * @param {Array<object|null>} [previousSlots=[]] - Existing visible slots.
+ * @returns {Array<object|null>} Exactly five market slots, using null for gaps.
+ */
 function buildMarketSlots(cards, previousSlots = []) {
   const availableCards = (cards ?? []).filter(Boolean);
   const shortTerm = shuffleCards(
@@ -101,12 +119,28 @@ function buildMarketSlots(cards, previousSlots = []) {
   return nextSlots;
 }
 
+/**
+ * Waits for a fixed number of milliseconds.
+ *
+ * @param {number} ms - Delay duration in milliseconds.
+ * @returns {Promise<void>} Promise that resolves after the timeout completes.
+ */
 function delay(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
+/**
+ * Converts event payload variants into the shape consumed by the event modal.
+ *
+ * Backend responses can expose the event directly or nest it inside
+ * `lastEventResult`. This helper normalizes both variants and fills optional
+ * fields so the view layer can render the event defensively.
+ *
+ * @param {object|null|undefined} payload - Raw event payload from API responses.
+ * @returns {object|null} Normalized event data, or null when no event exists.
+ */
 function normalizeEventResult(payload) {
   if (!payload) return null;
 
@@ -124,6 +158,17 @@ function normalizeEventResult(payload) {
   };
 }
 
+/**
+ * Combines two event result sources while preserving richer media/effect data.
+ *
+ * The event selection endpoint and the refreshed game state can each contain
+ * different parts of the same event. This function merges both sources so the
+ * player sees the most complete event reveal after making a choice.
+ *
+ * @param {object|null|undefined} primary - Preferred event result payload.
+ * @param {object|null|undefined} fallback - Secondary event result payload.
+ * @returns {object|null} The merged normalized event result.
+ */
 function mergeEventResults(primary, fallback) {
   const normalizedPrimary = normalizeEventResult(primary);
   const normalizedFallback = normalizeEventResult(fallback);
@@ -145,6 +190,11 @@ function mergeEventResults(primary, fallback) {
   };
 }
 
+/**
+ * Reads whether the first-visit help dialog has already been dismissed.
+ *
+ * @returns {boolean} True when the welcome help modal should be skipped.
+ */
 function getHelpModalPreference() {
   try {
     return localStorage.getItem(HELP_DISMISSED_STORAGE_KEY) === "1";
@@ -153,6 +203,14 @@ function getHelpModalPreference() {
   }
 }
 
+/**
+ * Persists the welcome help dismissal flag.
+ *
+ * Storage failures are intentionally ignored because the game remains playable
+ * without this preference.
+ *
+ * @returns {void}
+ */
 function setHelpModalPreference() {
   try {
     localStorage.setItem(HELP_DISMISSED_STORAGE_KEY, "1");
@@ -161,10 +219,26 @@ function setHelpModalPreference() {
   }
 }
 
-function toText(value, fallback = "") {
-  return typeof value === "string" && value.trim() ? value.trim() : fallback;
-}
-
+/**
+ * Returns a trimmed string when available, otherwise a fallback value.
+ *
+ * @param {unknown} value - Candidate value that may contain display text.
+ * @param {string} [fallback=""] - Text used when the candidate is empty.
+ * @returns {string} The normalized display text.
+ */
+/**
+ * Produces phase-specific instructional copy for the current game state.
+ *
+ * The returned text explains what the player should understand or do in the
+ * active phase. Early harvest, delivery, and selling phases receive additional
+ * guidance because the board can appear inactive before the orchard has enough
+ * trees, crates, or sales stands.
+ *
+ * @param {string} phase - Current phase identifier from the backend.
+ * @param {object|null} gameState - Current game state snapshot.
+ * @returns {{summary: string, tip: string, urgency: string}} Text for the phase
+ * coach panel.
+ */
 function getPhaseCoach(phase, gameState) {
   const round = gameState?.currentRound ?? 1;
   const crateCount = gameState?.plantation?.crates?.length ?? 0;
@@ -266,6 +340,12 @@ function getPhaseCoach(phase, gameState) {
   };
 }
 
+/**
+ * Looks up the player-facing label of the phase that follows the current one.
+ *
+ * @param {string} currentPhase - Active phase identifier.
+ * @returns {string} Label for the next phase, or a round-transition fallback.
+ */
 function getNextPhaseLabel(currentPhase) {
   const currentIndex = PHASE_ORDER.indexOf(currentPhase);
   if (currentIndex === -1 || currentIndex === PHASE_ORDER.length - 1) {
@@ -276,6 +356,18 @@ function getNextPhaseLabel(currentPhase) {
   return PHASE_LABELS[nextPhase] ?? "Next step";
 }
 
+/**
+ * Determines whether a contextual explanation should be shown for quiet phases.
+ *
+ * Some phases can resolve without visible board movement, especially in early
+ * rounds or when required infrastructure is missing. This helper returns modal
+ * content that explains why no harvest, delivery, or sale occurred.
+ *
+ * @param {string} phase - Current game phase.
+ * @param {object|null} gameState - Current game state snapshot.
+ * @returns {{key: string, eyebrow: string, title: string, reasons: string[]}|null}
+ * Popup content, or null when no explanation is needed.
+ */
 function getQuietPhasePopup(phase, gameState) {
   const plantation = gameState?.plantation;
   if (!plantation) return null;
@@ -406,6 +498,34 @@ function getQuietPhasePopup(phase, gameState) {
   return null;
 }
 
+/**
+ * Main screen for the Apfelkomplott game round.
+ *
+ * `GamePage` coordinates the complete playable React interface: it loads the
+ * current backend state, displays the board, market, score, phase controls,
+ * event choices, help content, and explanatory modals. It also mediates all
+ * state-changing player actions, such as advancing phases, selecting event
+ * cards, buying farm investments, and purchasing production cards.
+ *
+ * Important behavior:
+ * - Synchronizes backend state, active production cards, and market slots after
+ *   actions so the board and card market stay consistent.
+ * - Preserves market slot positions outside refill phases to reduce visual
+ *   reorientation for the player.
+ * - Blocks phase advancement while mandatory event choices or event reveals are
+ *   unresolved.
+ * - Shows onboarding, investment, quiet-phase, scoring, error, and farming-mode
+ *   modals at the moments where they explain game rules or backend results.
+ * - Respects reduced-motion preferences and stores the local sound/help
+ *   preferences in browser storage.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {() => void} props.onRestart - Callback invoked by the game-over modal
+ * when the player chooses to restart the game.
+ * @returns {JSX.Element} The complete game page, or a loading state before the
+ * first game-state snapshot has been fetched.
+ */
 export default function GamePage({ onRestart }) {
   const reduceMotion = useReducedMotion();
   const [gameState, setGameState] = useState(null);
@@ -417,7 +537,6 @@ export default function GamePage({ onRestart }) {
   const [eventOptionsError, setEventOptionsError] = useState("");
   const [isEventDrawModalOpen, setIsEventDrawModalOpen] = useState(false);
   const [revealedEvent, setRevealedEvent] = useState(null);
-  const [animationPhase, setAnimationPhase] = useState(null);
   const [cardScoringPopup, setCardScoringPopup] = useState(null);
   const [modeChangePopup, setModeChangePopup] = useState(null);
   const [errorPopup, setErrorPopup] = useState("");
@@ -438,17 +557,34 @@ export default function GamePage({ onRestart }) {
   const shownQuietPhasePopupsRef = useRef(new Set());
   const lastGameOverSoundRef = useRef("");
 
+  /**
+   * Shows a user-facing error modal and plays the matching feedback sound.
+   *
+   * @param {string} message - Error text returned by backend validation or API
+   * failures.
+   * @returns {void}
+   */
   function showErrorPopup(message) {
     if (!message) return;
     playError();
     setErrorPopup(message);
   }
 
+  /**
+   * Opens the regular help dialog from the header help button.
+   *
+   * @returns {void}
+   */
   function openGuideModal() {
     setIsWelcomeHelp(false);
     setIsHelpModalOpen(true);
   }
 
+  /**
+   * Closes the help dialog and stores the welcome dismissal when necessary.
+   *
+   * @returns {void}
+   */
   function closeGuideModal() {
     if (isWelcomeHelp) {
       setHelpModalPreference();
@@ -458,6 +594,12 @@ export default function GamePage({ onRestart }) {
     setIsHelpModalOpen(false);
   }
 
+  /**
+   * Scrolls the player to a specific investment area from the Invest prompt.
+   *
+   * @param {string} sectionId - DOM id of the target investment section.
+   * @returns {void}
+   */
   function focusInvestSection(sectionId) {
     const element = document.getElementById(sectionId);
     if (!element) return;
@@ -468,6 +610,11 @@ export default function GamePage({ onRestart }) {
     });
   }
 
+  /**
+   * Toggles sound effects and persists the preference for future sessions.
+   *
+   * @returns {void}
+   */
   function handleSoundToggle() {
     const nextValue = !isSoundEnabled;
     setIsSoundEnabled(nextValue);
@@ -478,6 +625,11 @@ export default function GamePage({ onRestart }) {
     }
   }
 
+  /**
+   * Loads the textual game guide used by the help modal.
+   *
+   * @returns {Promise<void>} Resolves after the guide request finishes.
+   */
   async function loadGuide() {
     setGuideLoading(true);
     setGuideError("");
@@ -492,6 +644,12 @@ export default function GamePage({ onRestart }) {
     }
   }
 
+  /**
+   * Loads the three event-card options that must be chosen in DRAW_EVENT.
+   *
+   * @returns {Promise<void>} Resolves after event options have been loaded or an
+   * error has been shown.
+   */
   async function loadEventOptions() {
     setEventOptionsLoading(true);
     setEventOptionsError("");
@@ -508,6 +666,16 @@ export default function GamePage({ onRestart }) {
     }
   }
 
+  /**
+   * Fetches and arranges the card market for the current phase.
+   *
+   * Refill phases retry briefly because backend state can lag behind the phase
+   * transition. Other phases preserve previous card positions when possible.
+   *
+   * @param {string} phase - Phase used to decide whether slots should refill.
+   * @param {Array<object|null>} [previousSlots=[]] - Existing market slots.
+   * @returns {Promise<Array<object|null>>} Market slots ready for rendering.
+   */
   async function fetchMarketForPhase(phase, previousSlots = []) {
     const preserveSlots = phase !== "REFILL_CARDS";
 
@@ -530,6 +698,18 @@ export default function GamePage({ onRestart }) {
     return previousSlots;
   }
 
+  /**
+   * Refreshes the main game data required by this page.
+   *
+   * The function fetches the backend game state, active production cards, and
+   * visible market cards, then updates React state in one place so the rendered
+   * board remains consistent after player actions.
+   *
+   * @param {object} [options] - Refresh options.
+   * @param {boolean} [options.preserveSlots=true] - Whether existing market
+   * slot positions should be reused.
+   * @returns {Promise<object>} Latest game state returned by the backend.
+   */
   async function refreshGame({ preserveSlots = true } = {}) {
     // State and market are refreshed together so board UI and card slots stay in sync.
     const [state, activeCards] = await Promise.all([
@@ -568,25 +748,6 @@ export default function GamePage({ onRestart }) {
     setIsEventDrawModalOpen(false);
     setEventOptions([]);
     setEventOptionsError("");
-  }, [gameState?.currentPhase]);
-
-  useEffect(() => {
-    if (!gameState) return;
-
-    if (
-      gameState.currentPhase === "ROTATE" ||
-      gameState.currentPhase === "HARVEST" ||
-      gameState.currentPhase === "DELIVER" ||
-      gameState.currentPhase === "SELL"
-    ) {
-      setAnimationPhase(gameState.currentPhase);
-
-      const timer = setTimeout(() => {
-        setAnimationPhase(null);
-      }, gameState.currentPhase === "ROTATE" ? 1200 : 800);
-
-      return () => clearTimeout(timer);
-    }
   }, [gameState?.currentPhase]);
 
   useEffect(() => {
@@ -669,6 +830,15 @@ export default function GamePage({ onRestart }) {
     setIsInvestPromptOpen(true);
   }, [gameState]);
 
+  /**
+   * Advances the game to the next backend phase and refreshes dependent UI data.
+   *
+   * Production-card scoring results are shown immediately after the transition
+   * so score changes are explained before the player continues.
+   *
+   * @returns {Promise<void>} Resolves after the next phase, active cards, and
+   * market have been synchronized.
+   */
   async function handleNextPhase() {
     playUiClick();
     const updated = await nextPhase();
@@ -686,6 +856,14 @@ export default function GamePage({ onRestart }) {
     setMarket(currentMarket);
   }
 
+  /**
+   * Submits the selected event option and displays the revealed event card.
+   *
+   * @param {number} optionIndex - Index of the event option selected by the
+   * player in the draw modal.
+   * @returns {Promise<void>} Resolves after the selection is processed and the
+   * game state is refreshed.
+   */
   async function handleEventSelection(optionIndex) {
     playUiClick();
     setEventSelectionLoading(true);
@@ -707,6 +885,13 @@ export default function GamePage({ onRestart }) {
     }
   }
 
+  /**
+   * Purchases a basic farm investment through the backend.
+   *
+   * @param {string} type - Backend investment action identifier.
+   * @returns {Promise<boolean>} True when the purchase succeeds, false when the
+   * backend rejects it.
+   */
   async function buy(type) {
     try {
       playUiClick();
@@ -722,6 +907,16 @@ export default function GamePage({ onRestart }) {
     }
   }
 
+  /**
+   * Purchases a production card and reconciles visual market state afterwards.
+   *
+   * The selected slot is cleared optimistically while the backend confirms the
+   * purchase. If the card changes the farming mode, a modal explains the change
+   * after the refreshed state is available.
+   *
+   * @param {string} cardId - Identifier of the production card to buy.
+   * @returns {Promise<void>} Resolves after purchase handling and refresh.
+   */
   async function handleBuyProductionCard(cardId) {
     const previousMode = gameState?.farmingMode ?? null;
 
@@ -817,7 +1012,7 @@ export default function GamePage({ onRestart }) {
       <div className="game-shell">
         <GameOverModal gameState={gameState} onRestart={onRestart} />
 
-        <motion.header
+        <Motion.header
           className="game-hero"
           key={`hero-${gameState.currentPhase}-${gameState.currentRound}`}
           initial={reduceMotion ? false : { opacity: 0.92, y: 10 }}
@@ -834,7 +1029,7 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <div className="game-hero__meta">
-            <motion.div
+            <Motion.div
               className="hero-chip"
               animate={
                 reduceMotion ? undefined : gameState.currentPhase ? { scale: [1, 1.02, 1] } : undefined
@@ -843,12 +1038,12 @@ export default function GamePage({ onRestart }) {
             >
               <span className="hero-chip__label">Mode</span>
               <strong>{gameState.farmingMode}</strong>
-            </motion.div>
-            <motion.div className="hero-chip" layout>
+            </Motion.div>
+            <Motion.div className="hero-chip" layout>
               <span className="hero-chip__label">Round</span>
               <strong>{gameState.currentRound}</strong>
-            </motion.div>
-            <motion.div
+            </Motion.div>
+            <Motion.div
               className="hero-chip hero-chip--phase"
               key={gameState.currentPhase}
               initial={reduceMotion ? false : { opacity: 0.6, y: 6 }}
@@ -857,20 +1052,20 @@ export default function GamePage({ onRestart }) {
             >
               <span className="hero-chip__label">Phase</span>
               <strong>{gameState.currentPhase.replaceAll("_", " ")}</strong>
-            </motion.div>
-            <motion.div className="hero-chip game-help-chip" layout>
+            </Motion.div>
+            <Motion.div className="hero-chip game-help-chip" layout>
               <HelpButton onClick={openGuideModal} />
-            </motion.div>
-            <motion.div className="hero-chip game-sound-chip" layout>
+            </Motion.div>
+            <Motion.div className="hero-chip game-sound-chip" layout>
               <SoundToggleButton
                 enabled={isSoundEnabled}
                 onToggle={handleSoundToggle}
               />
-            </motion.div>
+            </Motion.div>
           </div>
-        </motion.header>
+        </Motion.header>
 
-        <motion.div
+        <Motion.div
           key={`phase-bar-${gameState.currentPhase}`}
           initial={reduceMotion ? false : { opacity: 0.8, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -880,7 +1075,7 @@ export default function GamePage({ onRestart }) {
             currentPhase={gameState.currentPhase}
             round={gameState.currentRound}
           />
-        </motion.div>
+        </Motion.div>
 
         <section className="game-focus">
           <div className="game-focus__copy">
@@ -1161,7 +1356,6 @@ export default function GamePage({ onRestart }) {
           <div className="board-col">
             <BoardLayout
               gameState={gameState}
-              animationPhase={animationPhase}
               activeProductionCards={activeProductionCards}
             />
 
@@ -1183,7 +1377,7 @@ export default function GamePage({ onRestart }) {
           </div>
 
           <aside className="sidebar">
-            <motion.div
+            <Motion.div
               className={`panel panel--soft${shouldSpotlightNextMove ? " panel--next-move" : ""}`}
               key={`controls-${gameState.currentPhase}`}
               initial={reduceMotion ? false : { opacity: 0.9, y: 10 }}
@@ -1203,9 +1397,9 @@ export default function GamePage({ onRestart }) {
                 headline={controlsHeadline}
                 hint={controlsHint}
               />
-            </motion.div>
+            </Motion.div>
 
-            <motion.div
+            <Motion.div
               className="panel panel--soft score-panel"
               initial={reduceMotion ? false : { opacity: 0.9, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1225,7 +1419,7 @@ export default function GamePage({ onRestart }) {
                   gameState.productionCardCostModifiers?.ST_USE_SHADE_NETS ?? 0
                 }
               />
-            </motion.div>
+            </Motion.div>
           </aside>
         </div>
 

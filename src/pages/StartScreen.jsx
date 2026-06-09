@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import "./StartScreen.css";
 
 const highlights = [
@@ -7,28 +7,41 @@ const highlights = [
   "Research-focused game prototype",
 ];
 
+/**
+ * Landing screen for the Apfelkomplott prototype.
+ *
+ * The page introduces the research prototype and gives the player a single
+ * entry point into the mode-selection flow. Motion is used to present the
+ * title, summary, and thesis-relevant simulation metrics.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {() => void} props.onPlay - Callback fired when the player starts the
+ * experience.
+ * @returns {JSX.Element} Animated start screen for the game.
+ */
 export default function StartScreen({ onPlay }) {
   return (
     <div className="start-screen">
       <div className="start-screen__backdrop" />
 
-      <motion.div
+      <Motion.div
         className="start-screen__content"
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
 
-        <motion.h1
+        <Motion.h1
           className="start-screen__title"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           Apfelkomplott
-        </motion.h1>
+        </Motion.h1>
 
-        <motion.p
+        <Motion.p
           className="start-screen__subtitle"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -36,9 +49,9 @@ export default function StartScreen({ onPlay }) {
         >
           An interactive orchard strategy experience exploring production,
           sustainability, and decision-making in a digital board game format.
-        </motion.p>
+        </Motion.p>
 
-        <motion.div
+        <Motion.div
           className="start-screen__actions"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -50,9 +63,9 @@ export default function StartScreen({ onPlay }) {
           <div className="start-screen__supporting">
             {/* Thesis presentation prototype for browser-based play */}
           </div>
-        </motion.div>
+        </Motion.div>
 
-        <motion.div
+        <Motion.div
           className="start-screen__highlights"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -63,10 +76,10 @@ export default function StartScreen({ onPlay }) {
               {item}
             </div>
           ))}
-        </motion.div>
-      </motion.div>
+        </Motion.div>
+      </Motion.div>
 
-      <motion.div
+      <Motion.div
         className="start-screen__panel"
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -95,7 +108,7 @@ export default function StartScreen({ onPlay }) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

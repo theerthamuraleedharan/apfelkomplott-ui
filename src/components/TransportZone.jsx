@@ -1,5 +1,17 @@
 import "./TransportArea.css";
 
+/**
+ * Transport-zone panel for the main board layout.
+ *
+ * The component summarizes available crates and lists apples currently stored in
+ * transport. It helps players judge whether harvested apples can move toward
+ * sales stands.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object} props.plantation - Plantation state with crates and apples.
+ * @returns {JSX.Element} Transport area summary cards.
+ */
 export default function TransportZone({ plantation }) {
   return (
     <div className="transportZone">

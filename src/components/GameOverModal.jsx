@@ -1,6 +1,19 @@
 import AnimatedModal from "./AnimatedModal";
 import "./GameOverModal.css";
 
+/**
+ * End-of-game modal that summarizes why the game ended.
+ *
+ * The modal derives a human-readable failure or completion reason from the
+ * score track and round count, then lets the player return to the start flow.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {object|null} props.gameState - Current game state containing game-over
+ * and score information.
+ * @param {() => void} props.onRestart - Callback used to restart the game flow.
+ * @returns {JSX.Element|null} Game-over dialog, or null while the game is active.
+ */
 export default function GameOverModal({ gameState, onRestart }) {
   if (!gameState?.gameOver) return null;
 

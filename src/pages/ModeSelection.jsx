@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import "./ModeSelection.css";
 
 const modeCards = [
@@ -30,6 +30,23 @@ const modeCards = [
   },
 ];
 
+/**
+ * Screen for choosing the initial farming strategy.
+ *
+ * The selected mode determines the backend game setup and influences available
+ * production decisions. While the backend starts the game, the component shows a
+ * loading overlay and disables further mode changes.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {(mode: string) => void} props.onSelect - Called with the selected
+ * farming mode identifier.
+ * @param {() => void} props.onBack - Callback for returning to the previous
+ * screen.
+ * @param {boolean} [props.isLoading=false] - Whether game creation is in
+ * progress.
+ * @returns {JSX.Element} Mode-selection interface.
+ */
 export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
   return (
     <div className="mode-page">
@@ -51,7 +68,7 @@ export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
         Back
       </button>
 
-      <motion.div
+      <Motion.div
         className="mode-page__hero"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,11 +81,11 @@ export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
           This choice affects the available production options and decisions. 
           You can change the strategy later in the game by converting the plantation to a different farming mode.
         </p>
-      </motion.div>
+      </Motion.div>
 
       <div className="mode-grid">
         {modeCards.map((mode, index) => (
-          <motion.button
+          <Motion.button
             key={mode.id}
             type="button"
             className={mode.className}
@@ -96,7 +113,7 @@ export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
             <div className="mode-card__footer">
               <span>{isLoading ? "Loading..." : "Select Mode"}</span>
             </div>
-          </motion.button>
+          </Motion.button>
         ))}
       </div>
     </div>

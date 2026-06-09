@@ -9,6 +9,23 @@ const PRODUCTION_CARD_HELP_POINTS = [
   "Open a card before buying it to review its years, score effects, and cost for your current farming mode.",
 ];
 
+/**
+ * Production-card market used during and outside the Invest phase.
+ *
+ * The market renders five stable slots, previews available production cards, and
+ * opens a detailed inspection dialog before purchase. Buying is only enabled
+ * when `canBuy` is true, allowing the same component to act as a preview in
+ * non-investment phases.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {Array<object|null>} props.market - Five visible production-card slots.
+ * @param {string} props.mode - Current farming mode, used for mode-specific
+ * cost display.
+ * @param {boolean} props.canBuy - Whether purchase buttons are enabled.
+ * @param {(cardId: string) => void} props.onBuy - Callback for buying a card.
+ * @returns {JSX.Element} Production-card market and detail modal.
+ */
 export default function Market({ market, mode, canBuy, onBuy }) {
   const buyHint = "Available only during the Invest phase";
   const [selectedCard, setSelectedCard] = useState(null);

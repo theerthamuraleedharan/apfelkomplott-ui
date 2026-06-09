@@ -7,6 +7,12 @@ function toText(value, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+/**
+ * Converts backend guide values into a list of displayable strings.
+ *
+ * @param {unknown} value - Raw guide field from the backend.
+ * @returns {string[]} Cleaned list of text items.
+ */
 function toList(value) {
   if (Array.isArray(value)) {
     return value
@@ -29,6 +35,16 @@ function toList(value) {
   return [];
 }
 
+/**
+ * Normalizes the game-guide response for consistent rendering.
+ *
+ * The backend guide can use several field names for the same concept. This
+ * function maps those variants into one structure used by the help modal and
+ * supplies safe fallbacks for thesis demonstrations without backend data.
+ *
+ * @param {object|null|undefined} guide - Raw guide payload.
+ * @returns {object} Normalized guide data for the modal.
+ */
 function normalizeGuide(guide) {
   if (!guide || typeof guide !== "object") {
     return {
@@ -87,40 +103,6 @@ function normalizeGuide(guide) {
     beginnerTips: toList(guide.beginnerTips ?? guide.tips ?? guide.playerTips),
     roundPhases,
   };
-}
-
-function buildGuideSteps(roundPhases) {
-  const fallbackDescriptions = {
-    MOVE_MARKER:
-      "Start the new round by moving the round marker forward. The game lasts up to 15 rounds.",
-    DRAW_EVENT:
-      "Draw and resolve the event card. Some events happen now, while others also affect the next round.",
-    REFILL_CARDS:
-      "Refill the production card market so fresh options are available before you invest.",
-    SELL:
-      "Sell apples that are already in sales stands. Each sold apple gives money.",
-    DELIVER:
-      "Move apples from transport crates into sales stands. Apples must arrive here before they can be sold.",
-    HARVEST:
-      "Harvest apples from mature trees into transport crates. Only trees in fields 3 to 6 produce apples.",
-    ROTATE:
-      "Rotate the plantation disk so every tree gets older. Trees that pass field 6 are removed.",
-    INTERMEDIATE_SCORING:
-      "Check whether you created waste or left crates and stands empty. Balanced flow helps your economy.",
-    INVEST:
-      "Buy trees, crates, sales stands, or production cards. This is where you build your long-term strategy.",
-    CARD_SCORING:
-      "Apply production card effects that change economy, environment, or health before the next round starts.",
-  };
-
-  return roundPhases.map((phase, index) => ({
-    ...phase,
-    stepTitle: `Step ${index + 1}`,
-    detail:
-      phase.description ||
-      fallbackDescriptions[phase.key] ||
-      "Complete this part of the round before moving to the next step.",
-  }));
 }
 
 const HOW_TO_PLAY_HIGHLIGHTS = [
@@ -225,6 +207,26 @@ function Section({ title, items, body }) {
   );
 }
 
+/**
+ * Multi-page help and rulebook modal for the game.
+ *
+ * The modal combines backend guide content with local fallback explanations for
+ * the round flow, rules, onboarding tips, and current phase. It resets to the
+ * guide page every time it opens so the player always starts from the overview.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {boolean} props.isOpen - Whether the modal is visible.
+ * @param {object|null} props.guide - Raw guide content from the backend.
+ * @param {boolean} props.isLoading - Whether guide content is loading.
+ * @param {string} props.error - Guide-loading error message.
+ * @param {() => void} props.onClose - Callback for closing the modal.
+ * @param {() => void} props.onRetry - Callback for retrying guide loading.
+ * @param {string} props.currentPhase - Current phase used for contextual help.
+ * @param {boolean} [props.isWelcome=false] - Whether the modal is opened as the
+ * first-visit welcome guide.
+ * @returns {JSX.Element} Game guide modal.
+ */
 export default function GameHelpModal({
   isOpen,
   guide,
@@ -237,7 +239,6 @@ export default function GameHelpModal({
 }) {
   const normalizedGuide = normalizeGuide(guide);
   const [activePage, setActivePage] = useState("guide");
-  const guideSteps = buildGuideSteps(normalizedGuide.roundPhases);
   const activePageIndex = HELP_PAGES.findIndex((page) => page.key === activePage);
   const previousPage = activePageIndex > 0 ? HELP_PAGES[activePageIndex - 1] : null;
   const nextPage =
@@ -247,7 +248,7 @@ export default function GameHelpModal({
 
   useEffect(() => {
     if (isOpen) {
-      setActivePage("guide");
+      queueMicrotask(() => setActivePage("guide"));
     }
   }, [isOpen]);
 
@@ -359,29 +360,6 @@ export default function GameHelpModal({
                 <p className="game-help__body">
                   Use this simpler order to understand what happens in a normal round and where your attention should go.
                 </p>
-              {/* <div className="game-help__stepList">
-                {guideSteps.map((step) => {
-                  const isCurrent = step.key && step.key === currentPhase;
-                  return (
-                    <article
-                      key={`${step.key || step.title}-${step.index}-step`}
-                      className={`game-help__stepItem${isCurrent ? " game-help__stepItem--current" : ""}`}
-                    >
-                      <div className="game-help__stepTop">
-                        <span className="game-help__stepNumber">{step.index + 1}</span>
-                        <div>
-                          <div className="game-help__stepEyebrow">{step.stepTitle}</div>
-                          <h3>{step.title}</h3>
-                          {isCurrent ? (
-                            <span className="game-help__phaseCurrent">You are here</span>
-                          ) : null}
-                        </div>
-                      </div>
-                      <p className="game-help__stepDescription">{step.detail}</p>
-                    </article>
-                  );
-                })}
-              </div> */}
             </section>
           ) : (
             <>

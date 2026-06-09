@@ -35,6 +35,22 @@ const INVESTMENT_ACTIONS = [
   },
 ];
 
+/**
+ * Investment interface shown during the Invest phase.
+ *
+ * The panel displays the four basic farm upgrades, their costs, and whether the
+ * player has enough money to buy each one. Purchase behavior is delegated to the
+ * parent page so backend validation remains centralized.
+ *
+ * @component
+ * @param {object} props - Component props.
+ * @param {number} props.money - Player money available for investments.
+ * @param {() => void} props.onBuySeedling - Buy-seedling callback.
+ * @param {() => void} props.onBuyPreGrown - Buy pre-grown-tree callback.
+ * @param {() => void} props.onBuyCrate - Buy transport-crate callback.
+ * @param {() => void} props.onBuyStand - Buy sales-stand callback.
+ * @returns {JSX.Element} Farm investment panel.
+ */
 export default function InvestmentPanel({
   money,
   onBuySeedling,
@@ -84,59 +100,15 @@ export default function InvestmentPanel({
   );
 }
 
-export function InvestmentQuickPanel({
-  money,
-  onBuySeedling,
-  onBuyPreGrown,
-  onBuyCrate,
-  onBuyStand,
-}) {
-  const handlers = {
-    seedling: onBuySeedling,
-    pregrown: onBuyPreGrown,
-    crate: onBuyCrate,
-    stand: onBuyStand,
-  };
-
-  return (
-    <section className="investQuickPanel">
-      <div className="investQuickPanel__header">
-        <div>
-          <div className="investQuickPanel__eyebrow">Invest Phase</div>
-          <h3 className="investQuickPanel__title">Buy upgrades now</h3>
-          <p className="investQuickPanel__hint">
-            Pick a farm upgrade here, then scroll down only if you want to inspect production cards too.
-          </p>
-        </div>
-
-        <div className="investQuickPanel__money">
-          <span>Cash</span>
-          <strong>{money}</strong>
-        </div>
-      </div>
-
-      <div className="investQuickPanel__grid">
-        {INVESTMENT_ACTIONS.map((action) => (
-          <button
-            key={action.id}
-            className={`investQuickAction${money < action.cost ? " is-disabled" : ""}`}
-            onClick={handlers[action.id]}
-            disabled={money < action.cost}
-            type="button"
-            title={money < action.cost ? `Need ${action.cost} money` : `Buy for ${action.cost} money`}
-          >
-            <div className="investQuickAction__top">
-              <span className="investQuickAction__name">{action.title}</span>
-              <span className="investQuickAction__cost">{action.cost}</span>
-            </div>
-            <span className="investQuickAction__sub">{action.cta}</span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
+/**
+ * Single purchasable farm-upgrade card.
+ *
+ * @param {object} props - Component props.
+ * @param {object} props.action - Static investment action definition.
+ * @param {number} props.money - Player money available for comparison.
+ * @param {() => void} props.onClick - Purchase callback.
+ * @returns {JSX.Element} Investment action button.
+ */
 function ActionCard({ action, money, onClick }) {
   const disabled = money < action.cost;
 
