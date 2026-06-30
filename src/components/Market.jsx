@@ -22,12 +22,12 @@ const PRODUCTION_CARD_HELP_POINTS = [
  * @param {Array<object|null>} props.market - Five visible production-card slots.
  * @param {string} props.mode - Current farming mode, used for mode-specific
  * cost display.
+ * @param {number} props.money - Money currently available to buy cards.
  * @param {boolean} props.canBuy - Whether purchase buttons are enabled.
  * @param {(cardId: string) => void} props.onBuy - Callback for buying a card.
  * @returns {JSX.Element} Production-card market and detail modal.
  */
-export default function Market({ market, mode, canBuy, onBuy }) {
-  const buyHint = "Available only during the Invest phase";
+export default function Market({ market, mode, money, canBuy, onBuy }) {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -145,6 +145,13 @@ export default function Market({ market, mode, canBuy, onBuy }) {
       <div className="market__grid market__grid--fixed">
         {Array.from({ length: 5 }).map((_, idx) => {
           const card = market[idx] ?? null;
+          const cardCost = resolveCost(card);
+          const canAffordCard =
+            typeof cardCost === "number" && money >= cardCost;
+          const purchaseEnabled = canBuy && canAffordCard;
+          const buyHint = !canBuy
+            ? "Available only during the Invest phase"
+            : `Not enough money (need ${cardCost})`;
           const headerMedia = getHeaderMedia(card);
           const bodyMedia = getBodyMedia(card);
           const previewSections = getPreviewSections(card);
@@ -244,20 +251,25 @@ export default function Market({ market, mode, canBuy, onBuy }) {
                   <div className={`prod-card__bottom${card.cost?.byMode ? " prod-card__bottom--dual" : ""}`}>
                     <CostDisplay card={card} mode={mode} getCostDisplay={getCostDisplay} />
 
-                    <div className={`buy-btn-wrap${canBuy ? "" : " is-disabled"}`} title={canBuy ? "Buy this card" : buyHint}>
+                    <div
+                      className={`buy-btn-wrap${purchaseEnabled ? "" : " is-disabled"}`}
+                      title={purchaseEnabled ? `Buy for ${cardCost}` : buyHint}
+                    >
                       <button
                         className="buy-btn"
-                        disabled={!canBuy}
+                        disabled={!purchaseEnabled}
                         onClick={(e) => {
                           e.stopPropagation();
                           onBuy(card.id);
                         }}
-                        aria-describedby={canBuy ? undefined : `buy-hint-${card.id}`}
+                        aria-describedby={
+                          purchaseEnabled ? undefined : `buy-hint-${card.id}`
+                        }
                       >
                         Buy
                       </button>
 
-                      {!canBuy && (
+                      {!purchaseEnabled && (
                         <span className="buy-tooltip" id={`buy-hint-${card.id}`} role="tooltip">
                           {buyHint}
                         </span>
