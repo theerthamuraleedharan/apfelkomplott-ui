@@ -285,7 +285,7 @@ export default function GameHelpModal({
         </div>
 
         <button type="button" className="game-help__close" onClick={onClose}>
-          Close
+          Skip
         </button>
       </div>
 
@@ -363,12 +363,7 @@ export default function GameHelpModal({
             </section>
           ) : (
             <>
-              <section className="game-help__section">
-                <div className="game-help__sectionTitle">Rulebook Highlights</div>
-                <p className="game-help__body">
-                  These rules are adapted from the attached Apfelkomplott PDF rulebook so players can check the core system without leaving the game.
-                </p>
-              </section>
+              
 
               {RULEBOOK_SECTIONS.map((section) => (
                 <Section

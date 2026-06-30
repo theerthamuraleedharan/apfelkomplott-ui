@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import GamePage from "./pages/GamePage";
 import StartScreen from "./pages/StartScreen";
 import ModeSelection from "./pages/ModeSelection";
-import { startGame as apiStartGame } from "./api/gameApi";
+import {
+  clearStoredGameId,
+  GAME_SESSION_EXPIRED_EVENT,
+  getStoredGameId,
+  startGame as apiStartGame,
+} from "./api/gameApi";
 
 const HELP_DISMISSED_STORAGE_KEY = "apfelkomplott-help-dismissed";
 
@@ -22,6 +27,17 @@ function App() {
   const [gameMode, setGameMode] = useState(null);
   const [isStartingGame, setIsStartingGame] = useState(false);
 
+  useEffect(() => {
+    const returnToStart = () => {
+      setGameMode(null);
+      navigate("/", { replace: true });
+    };
+
+    window.addEventListener(GAME_SESSION_EXPIRED_EVENT, returnToStart);
+    return () =>
+      window.removeEventListener(GAME_SESSION_EXPIRED_EVENT, returnToStart);
+  }, [navigate]);
+
   const startGame = async (mode) => {
     setIsStartingGame(true);
 
@@ -38,6 +54,7 @@ function App() {
   };
 
   const handleRestart = () => {
+    clearStoredGameId();
     setGameMode(null);
     navigate("/");
   };
@@ -57,7 +74,13 @@ function App() {
       />
       <Route
         path="/game"
-        element={<GamePage gameMode={gameMode} onRestart={handleRestart} />}
+        element={
+          getStoredGameId() ? (
+            <GamePage gameMode={gameMode} onRestart={handleRestart} />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
