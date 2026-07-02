@@ -24,10 +24,19 @@ const PRODUCTION_CARD_HELP_POINTS = [
  * cost display.
  * @param {number} props.money - Money currently available to buy cards.
  * @param {boolean} props.canBuy - Whether purchase buttons are enabled.
- * @param {(cardId: string) => void} props.onBuy - Callback for buying a card.
+ * @param {Set<string>} props.pendingCardIds - Card IDs with an active purchase
+ * request.
+ * @param {function(string): void} props.onBuy - Callback for buying a card.
  * @returns {JSX.Element} Production-card market and detail modal.
  */
-export default function Market({ market, mode, money, canBuy, onBuy }) {
+export default function Market({
+  market,
+  mode,
+  money,
+  canBuy,
+  pendingCardIds,
+  onBuy,
+}) {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -106,7 +115,9 @@ export default function Market({ market, mode, money, canBuy, onBuy }) {
       .slice(0, 2);
   }
 
-  const openCard = (card) => setSelectedCard(card);
+  const openCard = (card) => {
+    if (card) setSelectedCard(card);
+  };
 
   return (
     <div className="market">
@@ -148,10 +159,14 @@ export default function Market({ market, mode, money, canBuy, onBuy }) {
           const cardCost = resolveCost(card);
           const canAffordCard =
             typeof cardCost === "number" && money >= cardCost;
-          const purchaseEnabled = canBuy && canAffordCard;
+          const isPurchasePending = pendingCardIds?.has(card?.id) ?? false;
+          const purchaseEnabled =
+            canBuy && canAffordCard && !isPurchasePending;
           const buyHint = !canBuy
             ? "Available only during the Invest phase"
-            : `Not enough money (need ${cardCost})`;
+            : isPurchasePending
+              ? "Purchase in progress"
+              : `Not enough money (need ${cardCost})`;
           const headerMedia = getHeaderMedia(card);
           const bodyMedia = getBodyMedia(card);
           const previewSections = getPreviewSections(card);
@@ -266,7 +281,7 @@ export default function Market({ market, mode, money, canBuy, onBuy }) {
                           purchaseEnabled ? undefined : `buy-hint-${card.id}`
                         }
                       >
-                        Buy
+                        {isPurchasePending ? "Buying..." : "Buy"}
                       </button>
 
                       {!purchaseEnabled && (

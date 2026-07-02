@@ -22,17 +22,16 @@ import { PHASE_LABELS } from "../constants/phases";
 import GameHeader from "./gamePage/GameHeader";
 import GameMainLayout from "./gamePage/GameMainLayout";
 import GamePageModals from "./gamePage/GamePageModals";
-import PhaseCoachPanel from "./gamePage/PhaseCoachPanel";
 import {
   buildMarketSlots,
   delay,
   getHelpModalPreference,
   getNextPhaseLabel,
-  getPhaseCoach,
   getQuietPhasePopup,
   mergeEventResults,
   setHelpModalPreference,
 } from "./gamePage/gamePageUtils";
+import { completeProductionCardPurchase } from "./gamePage/productionCardPurchase";
 import {
   isSoundEnabled as getSoundEnabledPreference,
   playCardReveal,
@@ -69,7 +68,7 @@ import {
  *
  * @component
  * @param {object} props - Component props.
- * @param {() => void} props.onRestart - Callback invoked by the game-over modal
+ * @param {Function} props.onRestart - Callback invoked by the game-over modal
  * when the player chooses to restart the game.
  * @returns {JSX.Element} The complete game page, or a loading state before the
  * first game-state snapshot has been fetched.
@@ -97,6 +96,10 @@ export default function GamePage({ onRestart }) {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
   const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
+  const [pendingInvestmentType, setPendingInvestmentType] = useState(null);
+  const [pendingProductionCardIds, setPendingProductionCardIds] = useState(
+    () => new Set()
+  );
   const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
   const [quietPhasePopup, setQuietPhasePopup] = useState(null);
   const hasCheckedWelcomeHelpRef = useRef(false);
@@ -104,6 +107,8 @@ export default function GamePage({ onRestart }) {
   const hasShownEarlyFlowPromptRef = useRef(false);
   const shownQuietPhasePopupsRef = useRef(new Set());
   const lastGameOverSoundRef = useRef("");
+  const investmentRequestRef = useRef(false);
+  const pendingProductionCardIdsRef = useRef(new Set());
 
   /**
    * Shows a user-facing error modal and plays the matching feedback sound.
@@ -441,6 +446,11 @@ export default function GamePage({ onRestart }) {
    * backend rejects it.
    */
   async function buy(type) {
+    if (investmentRequestRef.current) return false;
+
+    investmentRequestRef.current = true;
+    setPendingInvestmentType(type);
+
     try {
       playUiClick();
       await buyInvestment(type);
@@ -452,6 +462,9 @@ export default function GamePage({ onRestart }) {
       // Backend owns investment rules, so business-rule failures show here as a user-facing popup.
       showErrorPopup(err.message);
       return false;
+    } finally {
+      investmentRequestRef.current = false;
+      setPendingInvestmentType(null);
     }
   }
 
@@ -466,27 +479,25 @@ export default function GamePage({ onRestart }) {
    * @returns {Promise<void>} Resolves after purchase handling and refresh.
    */
   async function handleBuyProductionCard(cardId) {
+    if (!cardId || pendingProductionCardIdsRef.current.has(cardId)) return;
+
     const previousMode = gameState?.farmingMode ?? null;
+    const cardExists = market.some((card) => card?.id === cardId);
+    if (!cardExists) return;
 
-    // Preserve the slot position visually while the backend confirms the purchase.
-    setMarket((prev) => {
-      const idx = prev.findIndex((card) => card?.id === cardId);
-      if (idx === -1) return prev;
-
-      const copy = [...prev];
-      copy[idx] = null;
-      return copy;
-    });
+    pendingProductionCardIdsRef.current.add(cardId);
+    setPendingProductionCardIds(
+      new Set(pendingProductionCardIdsRef.current)
+    );
 
     try {
       playUiClick();
-      const result = await buyProductionCard(cardId);
-
-      if (result?.reasons?.length) {
-        showErrorPopup(result.reasons.join("\n"));
-      }
-
-      const updatedState = await refreshGame();
+      const updatedState = await completeProductionCardPurchase({
+        cardId,
+        buyCard: buyProductionCard,
+        refreshGame,
+        showEffects: setCardScoringPopup,
+      });
       playSuccess();
 
       if (
@@ -502,13 +513,16 @@ export default function GamePage({ onRestart }) {
     } catch (err) {
       // This is where backend validation like "max 8 plants" is surfaced to the player.
       showErrorPopup(err.message);
-      await refreshGame();
+    } finally {
+      pendingProductionCardIdsRef.current.delete(cardId);
+      setPendingProductionCardIds(
+        new Set(pendingProductionCardIdsRef.current)
+      );
     }
   }
 
   if (!gameState) return <div className="game-loading">Loading game...</div>;
 
-  const phaseCoach = getPhaseCoach(gameState.currentPhase, gameState);
   const isEventChoiceHidden =
     gameState.currentPhase === "DRAW_EVENT" && !isEventDrawModalOpen;
   const controlsDisabled =
@@ -580,11 +594,6 @@ export default function GamePage({ onRestart }) {
           />
         </Motion.div>
 
-        <PhaseCoachPanel
-          phase={gameState.currentPhase}
-          coach={phaseCoach}
-        />
-
         {gameState.currentPhase === "DRAW_EVENT" && isEventDrawModalOpen && (
           <EventDrawModal
             options={eventOptions}
@@ -636,6 +645,8 @@ export default function GamePage({ onRestart }) {
           reduceMotion={reduceMotion}
           shouldSpotlightNextMove={shouldSpotlightNextMove}
           onBuyInvestment={buy}
+          pendingInvestmentType={pendingInvestmentType}
+          pendingProductionCardIds={pendingProductionCardIds}
           onBuyProductionCard={handleBuyProductionCard}
         />
 

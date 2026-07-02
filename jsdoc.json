@@ -1,0 +1,24 @@
+{
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.(js|jsx)$"
+  },
+  "opts": {
+    "destination": "docs",
+    "encoding": "utf8",
+    "readme": "README.md",
+    "recurse": true
+  },
+  "plugins": ["plugins/markdown"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true
+  }
+}

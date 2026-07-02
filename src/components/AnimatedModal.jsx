@@ -9,7 +9,7 @@ import { AnimatePresence, motion as Motion, useReducedMotion } from "framer-moti
  * @component
  * @param {object} props - Component props.
  * @param {boolean} props.isOpen - Whether the modal should be rendered.
- * @param {() => void} props.onClose - Callback used to close the modal.
+ * @param {Function} props.onClose - Callback used to close the modal.
  * @param {string} props.backdropClassName - CSS class for the overlay.
  * @param {string} props.panelClassName - CSS class for the dialog panel.
  * @param {React.ReactNode} props.children - Modal body content.

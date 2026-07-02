@@ -79,6 +79,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  overflow-y: auto;
   background: rgba(27, 32, 22, 0.56);
   backdrop-filter: blur(5px);
   z-index: 9999;
@@ -117,6 +118,8 @@
 
 .score-modal {
   text-align: left;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
 }
 
 .score-modal__eyebrow {
@@ -159,6 +162,63 @@
   color: #22321f;
 }
 
+.score-modal__harvest {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(242, 247, 232, 0.76);
+  border: 1px solid rgba(83, 105, 58, 0.12);
+}
+
+.score-modal__harvest h3 {
+  margin: 0 0 12px;
+  color: #31462a;
+  font-size: 1rem;
+}
+
+.score-modal__harvestStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.score-modal__harvestStat {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(83, 105, 58, 0.1);
+  text-align: center;
+}
+
+.score-modal__harvestStat--waste {
+  background: rgba(255, 246, 226, 0.86);
+  border-color: rgba(174, 120, 46, 0.18);
+}
+
+.score-modal__harvestStat span {
+  display: block;
+  min-height: 2.4em;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6f7e58;
+}
+
+.score-modal__harvestStat strong {
+  display: block;
+  margin-top: 5px;
+  color: #22321f;
+  font-size: 1.25rem;
+}
+
+.score-modal__harvest .score-modal__wasteReason {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(83, 105, 58, 0.12);
+  font-size: 0.9rem;
+}
+
 .score-modal__reasons {
   margin-top: 18px;
   padding: 16px 18px;
@@ -168,11 +228,26 @@
 }
 
 .score-modal__reasons p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0;
 }
 
 .score-modal__reasons p + p {
   margin-top: 10px;
+}
+
+.score-modal__reasonCount {
+  flex: 0 0 auto;
+  min-width: 34px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(63, 97, 55, 0.1);
+  color: #31502d;
+  font-size: 0.8rem;
+  text-align: center;
 }
 
 .score-modal__button {
@@ -227,5 +302,28 @@
 
   .score-modal__stats {
     grid-template-columns: 1fr;
+  }
+
+  .score-modal__harvestStats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .score-overlay {
+    padding: 14px;
+  }
+
+  .score-modal {
+    max-height: calc(100dvh - 28px);
+    padding: 22px 18px;
+  }
+
+  .score-modal__harvestStats {
+    grid-template-columns: 1fr;
+  }
+
+  .score-modal__harvestStat span {
+    min-height: 0;
   }
 }

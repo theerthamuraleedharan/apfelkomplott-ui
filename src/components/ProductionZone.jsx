@@ -26,15 +26,15 @@ function normalizeSlot(field, rotationSteps) {
 
 function getTreeSlotStyle(field, rotationSteps) {
   const slotIndex = normalizeSlot(field, rotationSteps);
-  return getPolarStyle(slotIndex, 23);
+  return getPolarStyle(slotIndex, 31);
 }
 
 function getTreeOffsets(index) {
   const positions = [
-    { x: -18, y: -16 },
-    { x: 10, y: -18 },
-    { x: -20, y: 12 },
-    { x: 12, y: 10 },
+    { x: -17, y: -16 },
+    { x: 17, y: -16 },
+    { x: -17, y: 16 },
+    { x: 17, y: 16 },
   ];
 
   return positions[index] ?? { x: 0, y: 0 };
@@ -153,7 +153,7 @@ export default function ProductionZone({
                         key={tree.id}
                         className="tree-wrapper"
                         style={{
-                          transform: `translate(${getTreeOffsets(index).x}px, ${getTreeOffsets(index).y}px)`,
+                          transform: `translate(-50%, -50%) translate(${getTreeOffsets(index).x}px, ${getTreeOffsets(index).y}px)`,
                         }}
                       >
                         <span

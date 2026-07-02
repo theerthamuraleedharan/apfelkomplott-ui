@@ -10,7 +10,7 @@ import { useEffect } from "react";
  * @component
  * @param {object} props - Component props.
  * @param {number} props.value - Numeric value to display.
- * @param {(value: number) => string} [props.format] - Optional formatter for
+ * @param {function(number): string} [props.format] - Optional formatter for
  * the displayed number.
  * @param {string} [props.className] - Optional CSS class for the span.
  * @returns {JSX.Element} Animated number element.

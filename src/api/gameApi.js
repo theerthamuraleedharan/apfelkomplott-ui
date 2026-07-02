@@ -169,7 +169,8 @@ export function buyProductionCard(cardId) {
   return gameRequest(
     `/buy-card?cardId=${encodeURIComponent(cardId)}`,
     { method: "POST" },
-    "Unable to buy the selected production card."
+    "Unable to buy the selected production card.",
+    { allowEmpty: true }
   );
 }
 

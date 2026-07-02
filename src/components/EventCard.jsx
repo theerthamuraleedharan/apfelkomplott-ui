@@ -28,9 +28,9 @@ const EVENT_CARD_HELP_POINTS = [
  * @param {boolean} props.isLoading - Whether options are loading.
  * @param {boolean} props.isSubmitting - Whether a selection is being revealed.
  * @param {string} props.error - Error message for failed option loading.
- * @param {(optionIndex: number) => void} props.onSelect - Selection callback.
- * @param {() => void} props.onRetry - Retry callback for loading failures.
- * @param {() => void} props.onClose - Callback for dismissing the modal.
+ * @param {function(number): void} props.onSelect - Selection callback.
+ * @param {Function} props.onRetry - Retry callback for loading failures.
+ * @param {Function} props.onClose - Callback for dismissing the modal.
  * @returns {JSX.Element} Event-card draw modal.
  */
 export function EventDrawModal({
@@ -152,7 +152,7 @@ export function EventDrawModal({
  * @component
  * @param {object} props - Component props.
  * @param {object} props.event - Normalized event result to display.
- * @param {() => void} props.onContinue - Callback fired when the player has
+ * @param {Function} props.onContinue - Callback fired when the player has
  * reviewed the event.
  * @returns {JSX.Element} Revealed event-card modal.
  */

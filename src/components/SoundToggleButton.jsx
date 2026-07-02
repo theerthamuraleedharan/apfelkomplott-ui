@@ -6,7 +6,7 @@ import "./SoundToggle.css";
  * @component
  * @param {object} props - Component props.
  * @param {boolean} props.enabled - Whether sound is currently enabled.
- * @param {() => void} props.onToggle - Callback for toggling the sound setting.
+ * @param {Function} props.onToggle - Callback for toggling the sound setting.
  * @returns {JSX.Element} Sound preference toggle.
  */
 export default function SoundToggleButton({ enabled, onToggle }) {

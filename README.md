@@ -150,6 +150,12 @@ npm run build
 Creates a production build.
 
 ```bash
+npm run docs
+```
+
+Generates browsable JSDoc HTML documentation in `docs/`.
+
+```bash
 npm run preview
 ```
 
@@ -160,6 +166,35 @@ npm run lint
 ```
 
 Runs ESLint.
+
+---
+
+## Code Documentation
+
+The React frontend uses JSDoc for components, props, API functions, and
+utilities. Generate the documentation with:
+
+```bash
+npm run docs
+```
+
+Then open `docs/index.html` in a browser. The generated `docs/` directory is
+ignored by Git because it can be recreated from source comments using
+`jsdoc.json`.
+
+Example:
+
+```js
+/**
+ * Briefly explain what the function does.
+ *
+ * @param {string} value - Explain the input.
+ * @returns {boolean} Explain the result.
+ */
+function example(value) {
+  return Boolean(value);
+}
+```
 
 ---
 

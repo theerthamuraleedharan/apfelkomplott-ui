@@ -10,7 +10,7 @@ import { PHASE_LABELS } from "../constants/phases";
  * @component
  * @param {object} props - Component props.
  * @param {string} props.phase - Current phase identifier.
- * @param {() => void} props.onNextPhase - Callback that advances or reopens the
+ * @param {Function} props.onNextPhase - Callback that advances or reopens the
  * required phase action.
  * @param {boolean} [props.showScorePopup] - Whether scoring feedback should
  * temporarily block the button.

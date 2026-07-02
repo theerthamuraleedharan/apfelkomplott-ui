@@ -15,6 +15,8 @@ export default function GameMainLayout({
   shouldSpotlightNextMove,
   onBuyInvestment,
   onBuyProductionCard,
+  pendingInvestmentType,
+  pendingProductionCardIds,
 }) {
   return (
     <>
@@ -37,6 +39,7 @@ export default function GameMainLayout({
               <InvestmentPanel
                 phase={gameState.currentPhase}
                 money={gameState.money}
+                pendingInvestmentType={pendingInvestmentType}
                 onBuySeedling={() => onBuyInvestment("BUY_SEEDLING")}
                 onBuyPreGrown={() => onBuyInvestment("BUY_PRE_GROWN_TREE")}
                 onBuyCrate={() => onBuyInvestment("BUY_CRATE")}
@@ -102,6 +105,7 @@ export default function GameMainLayout({
           mode={gameState.farmingMode}
           money={gameState.money}
           canBuy={gameState.currentPhase === "INVEST"}
+          pendingCardIds={pendingProductionCardIds}
           onBuy={onBuyProductionCard}
         />
       </div>

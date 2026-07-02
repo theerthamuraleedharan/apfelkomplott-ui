@@ -18,7 +18,7 @@ function resolveSrc(src) {
  *
  * @component
  * @param {object} props - Component props.
- * @param {{type: string, src?: string, value?: string}|null} props.item - Media
+ * @param {object|null} props.item - Media
  * descriptor from the backend.
  * @param {string} [props.alt=""] - Accessible text for image media.
  * @param {string} [props.className=""] - Additional class for the outer media.

@@ -11,7 +11,7 @@ import "./GameOverModal.css";
  * @param {object} props - Component props.
  * @param {object|null} props.gameState - Current game state containing game-over
  * and score information.
- * @param {() => void} props.onRestart - Callback used to restart the game flow.
+ * @param {Function} props.onRestart - Callback used to restart the game flow.
  * @returns {JSX.Element|null} Game-over dialog, or null while the game is active.
  */
 export default function GameOverModal({ gameState, onRestart }) {

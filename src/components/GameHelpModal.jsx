@@ -220,8 +220,8 @@ function Section({ title, items, body }) {
  * @param {object|null} props.guide - Raw guide content from the backend.
  * @param {boolean} props.isLoading - Whether guide content is loading.
  * @param {string} props.error - Guide-loading error message.
- * @param {() => void} props.onClose - Callback for closing the modal.
- * @param {() => void} props.onRetry - Callback for retrying guide loading.
+ * @param {Function} props.onClose - Callback for closing the modal.
+ * @param {Function} props.onRetry - Callback for retrying guide loading.
  * @param {string} props.currentPhase - Current phase used for contextual help.
  * @param {boolean} [props.isWelcome=false] - Whether the modal is opened as the
  * first-visit welcome guide.
