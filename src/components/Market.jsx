@@ -24,7 +24,7 @@ const PRODUCTION_CARD_HELP_POINTS = [
  * cost display.
  * @param {number} props.money - Money currently available to buy cards.
  * @param {boolean} props.canBuy - Whether purchase buttons are enabled.
- * @param {(cardId: string) => void} props.onBuy - Callback for buying a card.
+ * @param {function(string): void} props.onBuy - Callback for buying a card.
  * @returns {JSX.Element} Production-card market and detail modal.
  */
 export default function Market({ market, mode, money, canBuy, onBuy }) {

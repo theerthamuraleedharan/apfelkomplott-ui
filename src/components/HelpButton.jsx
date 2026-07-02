@@ -5,7 +5,7 @@ import "./GameHelp.css";
  *
  * @component
  * @param {object} props - Component props.
- * @param {() => void} props.onClick - Callback for opening the help modal.
+ * @param {Function} props.onClick - Callback for opening the help modal.
  * @returns {JSX.Element} Help button.
  */
 export default function HelpButton({ onClick }) {

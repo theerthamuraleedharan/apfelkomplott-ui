@@ -22,13 +22,11 @@ import { PHASE_LABELS } from "../constants/phases";
 import GameHeader from "./gamePage/GameHeader";
 import GameMainLayout from "./gamePage/GameMainLayout";
 import GamePageModals from "./gamePage/GamePageModals";
-import PhaseCoachPanel from "./gamePage/PhaseCoachPanel";
 import {
   buildMarketSlots,
   delay,
   getHelpModalPreference,
   getNextPhaseLabel,
-  getPhaseCoach,
   getQuietPhasePopup,
   mergeEventResults,
   setHelpModalPreference,
@@ -69,7 +67,7 @@ import {
  *
  * @component
  * @param {object} props - Component props.
- * @param {() => void} props.onRestart - Callback invoked by the game-over modal
+ * @param {Function} props.onRestart - Callback invoked by the game-over modal
  * when the player chooses to restart the game.
  * @returns {JSX.Element} The complete game page, or a loading state before the
  * first game-state snapshot has been fetched.
@@ -97,6 +95,7 @@ export default function GamePage({ onRestart }) {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
   const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
+  const [pendingInvestmentType, setPendingInvestmentType] = useState(null);
   const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
   const [quietPhasePopup, setQuietPhasePopup] = useState(null);
   const hasCheckedWelcomeHelpRef = useRef(false);
@@ -104,6 +103,7 @@ export default function GamePage({ onRestart }) {
   const hasShownEarlyFlowPromptRef = useRef(false);
   const shownQuietPhasePopupsRef = useRef(new Set());
   const lastGameOverSoundRef = useRef("");
+  const investmentRequestRef = useRef(false);
 
   /**
    * Shows a user-facing error modal and plays the matching feedback sound.
@@ -441,6 +441,11 @@ export default function GamePage({ onRestart }) {
    * backend rejects it.
    */
   async function buy(type) {
+    if (investmentRequestRef.current) return false;
+
+    investmentRequestRef.current = true;
+    setPendingInvestmentType(type);
+
     try {
       playUiClick();
       await buyInvestment(type);
@@ -452,6 +457,9 @@ export default function GamePage({ onRestart }) {
       // Backend owns investment rules, so business-rule failures show here as a user-facing popup.
       showErrorPopup(err.message);
       return false;
+    } finally {
+      investmentRequestRef.current = false;
+      setPendingInvestmentType(null);
     }
   }
 
@@ -508,7 +516,6 @@ export default function GamePage({ onRestart }) {
 
   if (!gameState) return <div className="game-loading">Loading game...</div>;
 
-  const phaseCoach = getPhaseCoach(gameState.currentPhase, gameState);
   const isEventChoiceHidden =
     gameState.currentPhase === "DRAW_EVENT" && !isEventDrawModalOpen;
   const controlsDisabled =
@@ -580,11 +587,6 @@ export default function GamePage({ onRestart }) {
           />
         </Motion.div>
 
-        <PhaseCoachPanel
-          phase={gameState.currentPhase}
-          coach={phaseCoach}
-        />
-
         {gameState.currentPhase === "DRAW_EVENT" && isEventDrawModalOpen && (
           <EventDrawModal
             options={eventOptions}
@@ -636,6 +638,7 @@ export default function GamePage({ onRestart }) {
           reduceMotion={reduceMotion}
           shouldSpotlightNextMove={shouldSpotlightNextMove}
           onBuyInvestment={buy}
+          pendingInvestmentType={pendingInvestmentType}
           onBuyProductionCard={handleBuyProductionCard}
         />
 

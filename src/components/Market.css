@@ -739,6 +739,8 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: rgba(22, 20, 14, 0.68);
   backdrop-filter: blur(6px);
   animation: modalFadeIn 180ms ease-out;
@@ -747,6 +749,7 @@
 .cardModal__content {
   position: relative;
   width: min(100%, 620px);
+  max-height: calc(100dvh - 48px);
   animation: modalPopIn 200ms ease-out;
 }
 
@@ -768,6 +771,12 @@
 }
 
 .prod-card--zoom {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: none;
   cursor: default;
 }
@@ -898,8 +907,21 @@
     padding: 14px;
   }
 
+  .cardModal__content,
+  .prod-card--zoom {
+    max-height: calc(100dvh - 28px);
+  }
+
+  .prod-card--zoom .effect__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .prod-card--zoom .cost--dual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .cardModal__close {
-    top: -8px;
-    right: -4px;
+    top: 8px;
+    right: 8px;
   }
 }

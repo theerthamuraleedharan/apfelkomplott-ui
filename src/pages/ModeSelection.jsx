@@ -39,9 +39,9 @@ const modeCards = [
  *
  * @component
  * @param {object} props - Component props.
- * @param {(mode: string) => void} props.onSelect - Called with the selected
+ * @param {function(string): void} props.onSelect - Called with the selected
  * farming mode identifier.
- * @param {() => void} props.onBack - Callback for returning to the previous
+ * @param {Function} props.onBack - Callback for returning to the previous
  * screen.
  * @param {boolean} [props.isLoading=false] - Whether game creation is in
  * progress.

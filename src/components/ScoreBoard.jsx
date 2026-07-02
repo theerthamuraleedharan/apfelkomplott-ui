@@ -75,7 +75,7 @@ export default function ScoreBoard({
           }
           transition={{ duration: 0.45, ease: "easeOut" }}
         >
-          <span className="moneyBadge__icon">Cash</span>
+          <span className="moneyBadge__icon">Money</span>
           <AnimatedNumber className="moneyBadge__value" value={money} />
         </Motion.div>
       </div>

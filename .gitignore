@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+docs
 *.local
 .codex-temp-pptx/
 .codex-temp-pptx.zip

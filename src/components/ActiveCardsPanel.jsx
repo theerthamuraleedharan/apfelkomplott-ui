@@ -190,7 +190,7 @@ export default function ActiveCardsPanel({
  * @param {object} props.card - Production-card data to display.
  * @param {number} props.index - Position of the card in the visible list.
  * @param {string|null} props.expandedCardKey - Currently expanded card key.
- * @param {(cardKey: string|null) => void} props.onToggle - Expansion callback.
+ * @param {function((string|null)): void} props.onToggle - Expansion callback.
  * @returns {JSX.Element} Active production-card summary and details.
  */
 function ActiveCardItem({ card, index, expandedCardKey, onToggle }) {

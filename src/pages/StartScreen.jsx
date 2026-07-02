@@ -16,7 +16,7 @@ const highlights = [
  *
  * @component
  * @param {object} props - Component props.
- * @param {() => void} props.onPlay - Callback fired when the player starts the
+ * @param {Function} props.onPlay - Callback fired when the player starts the
  * experience.
  * @returns {JSX.Element} Animated start screen for the game.
  */

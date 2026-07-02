@@ -3,6 +3,7 @@ import "./InvestmentPanel.css";
 const INVESTMENT_ACTIONS = [
   {
     id: "seedling",
+    investmentType: "BUY_SEEDLING",
     badge: "Tree",
     title: "Seedling",
     subtitle: "Start a new orchard line with a young tree.",
@@ -11,6 +12,7 @@ const INVESTMENT_ACTIONS = [
   },
   {
     id: "pregrown",
+    investmentType: "BUY_PRE_GROWN_TREE",
     badge: "Growth",
     title: "Pre-grown Tree",
     subtitle: "Place a stronger tree and accelerate future harvests.",
@@ -19,6 +21,7 @@ const INVESTMENT_ACTIONS = [
   },
   {
     id: "crate",
+    investmentType: "BUY_CRATE",
     badge: "Logistics",
     title: "Transport Crate",
     subtitle: "Expand carrying capacity for upcoming deliveries.",
@@ -27,6 +30,7 @@ const INVESTMENT_ACTIONS = [
   },
   {
     id: "stand",
+    investmentType: "BUY_SALES_STAND",
     badge: "Sales",
     title: "Sales Stand",
     subtitle: "Open another sales point for stronger market output.",
@@ -45,14 +49,17 @@ const INVESTMENT_ACTIONS = [
  * @component
  * @param {object} props - Component props.
  * @param {number} props.money - Player money available for investments.
- * @param {() => void} props.onBuySeedling - Buy-seedling callback.
- * @param {() => void} props.onBuyPreGrown - Buy pre-grown-tree callback.
- * @param {() => void} props.onBuyCrate - Buy transport-crate callback.
- * @param {() => void} props.onBuyStand - Buy sales-stand callback.
+ * @param {string|null} props.pendingInvestmentType - Investment request that is
+ * currently awaiting a backend response.
+ * @param {Function} props.onBuySeedling - Buy-seedling callback.
+ * @param {Function} props.onBuyPreGrown - Buy pre-grown-tree callback.
+ * @param {Function} props.onBuyCrate - Buy transport-crate callback.
+ * @param {Function} props.onBuyStand - Buy sales-stand callback.
  * @returns {JSX.Element} Farm investment panel.
  */
 export default function InvestmentPanel({
   money,
+  pendingInvestmentType,
   onBuySeedling,
   onBuyPreGrown,
   onBuyCrate,
@@ -92,6 +99,8 @@ export default function InvestmentPanel({
             key={action.id}
             action={action}
             money={money}
+            pendingInvestmentType={pendingInvestmentType}
+            investmentType={action.investmentType}
             onClick={handlers[action.id]}
           />
         ))}
@@ -106,24 +115,37 @@ export default function InvestmentPanel({
  * @param {object} props - Component props.
  * @param {object} props.action - Static investment action definition.
  * @param {number} props.money - Player money available for comparison.
- * @param {() => void} props.onClick - Purchase callback.
+ * @param {Function} props.onClick - Purchase callback.
  * @returns {JSX.Element} Investment action button.
  */
-function ActionCard({ action, money, onClick }) {
-  const disabled = money < action.cost;
+function ActionCard({
+  action,
+  money,
+  onClick,
+  pendingInvestmentType,
+  investmentType,
+}) {
+  const isPending = pendingInvestmentType === investmentType;
+  const disabled = money < action.cost || Boolean(pendingInvestmentType);
 
   return (
     <button
       className={`investAction ${disabled ? "is-disabled" : ""}`}
       onClick={onClick}
       disabled={disabled}
-      title={disabled ? `Not enough money (need ${action.cost})` : `Buy for ${action.cost}`}
+      title={
+        pendingInvestmentType
+          ? "Please wait for the current purchase to finish"
+          : disabled
+            ? `Not enough money (need ${action.cost})`
+            : `Buy for ${action.cost}`
+      }
       type="button"
     >
       <div className="investAction__top">
         <span className="investAction__badge">{action.badge}</span>
         <span className={`investAction__state ${disabled ? "is-locked" : ""}`}>
-          {disabled ? "Locked" : "Ready"}
+          {isPending ? "Buying..." : disabled ? "Unavailable" : "Ready"}
         </span>
       </div>
 
@@ -138,7 +160,9 @@ function ActionCard({ action, money, onClick }) {
           <span className="investAction__costValue">{action.cost} Money</span>
         </div>
 
-        <span className="investAction__cta">{action.cta}</span>
+        <span className="investAction__cta">
+          {isPending ? "Processing..." : action.cta}
+        </span>
       </div>
     </button>
   );

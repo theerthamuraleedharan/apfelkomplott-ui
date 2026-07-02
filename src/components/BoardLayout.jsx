@@ -11,6 +11,27 @@ import { useEffect, useRef, useState } from "react";
 
 import "./BoardLayout.css";
 
+function hasValue(value) {
+  return value !== null && value !== undefined;
+}
+
+function getCountLabel(value, singular, plural) {
+  return Number(value) === 1 ? singular : plural;
+}
+
+function groupScoringReasons(reasons) {
+  const grouped = new Map();
+
+  (reasons ?? []).forEach((reason) => {
+    const text = typeof reason === "string" ? reason.trim() : "";
+    if (!text) return;
+
+    grouped.set(text, (grouped.get(text) ?? 0) + 1);
+  });
+
+  return Array.from(grouped, ([text, count]) => ({ text, count }));
+}
+
 /**
  * Main animated board layout for the game page.
  *
@@ -36,6 +57,15 @@ export default function BoardLayout({
   const reduceMotion = useReducedMotion();
 
   const scoringResult = gameState.lastScoreResult;
+  const hasHarvestSummary =
+    hasValue(scoringResult?.applesProduced) ||
+    hasValue(scoringResult?.transportCapacity) ||
+    hasValue(scoringResult?.wastedApples);
+  const wasteReason =
+    typeof scoringResult?.wasteReason === "string"
+      ? scoringResult.wasteReason.trim()
+      : "";
+  const groupedReasons = groupScoringReasons(scoringResult?.reasons);
 
   useEffect(() => {
     const score = scoringResult;
@@ -183,10 +213,71 @@ export default function BoardLayout({
               </div>
             </div>
 
-            {(scoringResult.reasons ?? []).length > 0 && (
+            {hasHarvestSummary && (
+              <section className="score-modal__harvest">
+                <h3>Harvest summary</h3>
+
+                <div className="score-modal__harvestStats">
+                  {hasValue(scoringResult.applesProduced) && (
+                    <div className="score-modal__harvestStat">
+                      <span>
+                        {getCountLabel(
+                          scoringResult.applesProduced,
+                          "Apple produced",
+                          "Apples produced"
+                        )}
+                      </span>
+                      <strong>{scoringResult.applesProduced}</strong>
+                    </div>
+                  )}
+
+                  {hasValue(scoringResult.transportCapacity) && (
+                    <div className="score-modal__harvestStat">
+                      <span>
+                        {getCountLabel(
+                          scoringResult.transportCapacity,
+                          "Transport space",
+                          "Transport spaces"
+                        )}
+                      </span>
+                      <strong>{scoringResult.transportCapacity}</strong>
+                    </div>
+                  )}
+
+                  {hasValue(scoringResult.wastedApples) && (
+                    <div className="score-modal__harvestStat score-modal__harvestStat--waste">
+                      <span>
+                        {getCountLabel(
+                          scoringResult.wastedApples,
+                          "Apple wasted",
+                          "Apples wasted"
+                        )}
+                      </span>
+                      <strong>{scoringResult.wastedApples}</strong>
+                    </div>
+                  )}
+                </div>
+
+                {wasteReason && (
+                  <p className="score-modal__wasteReason">{wasteReason}</p>
+                )}
+              </section>
+            )}
+
+            {groupedReasons.length > 0 && (
               <div className="score-modal__reasons">
-                {(scoringResult.reasons ?? []).map((reason, index) => (
-                  <p key={index}>{reason}</p>
+                {groupedReasons.map(({ text, count }) => (
+                  <p key={text}>
+                    <span>{text}</span>
+                    {count > 1 && (
+                      <strong
+                        className="score-modal__reasonCount"
+                        aria-label={`Occurs ${count} times`}
+                      >
+                        ×{count}
+                      </strong>
+                    )}
+                  </p>
                 ))}
               </div>
             )}
