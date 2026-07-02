@@ -13,6 +13,7 @@ export default function GameMainLayout({
   market,
   reduceMotion,
   shouldSpotlightNextMove,
+  onRoundScoreClose,
   onBuyInvestment,
   onBuyProductionCard,
   pendingInvestmentType,
@@ -29,6 +30,7 @@ export default function GameMainLayout({
           <BoardLayout
             gameState={gameState}
             activeProductionCards={activeProductionCards}
+            onRoundScoreClose={onRoundScoreClose}
           />
 
           {gameState.currentPhase === "INVEST" && (
