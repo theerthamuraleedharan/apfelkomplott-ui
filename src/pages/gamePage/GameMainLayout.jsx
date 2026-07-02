@@ -16,6 +16,7 @@ export default function GameMainLayout({
   onBuyInvestment,
   onBuyProductionCard,
   pendingInvestmentType,
+  pendingProductionCardIds,
 }) {
   return (
     <>
@@ -104,6 +105,7 @@ export default function GameMainLayout({
           mode={gameState.farmingMode}
           money={gameState.money}
           canBuy={gameState.currentPhase === "INVEST"}
+          pendingCardIds={pendingProductionCardIds}
           onBuy={onBuyProductionCard}
         />
       </div>

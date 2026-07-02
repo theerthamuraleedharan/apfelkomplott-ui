@@ -8,7 +8,8 @@
     "build": "vite build",
     "docs": "jsdoc -c jsdoc.json",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test"
   },
   "dependencies": {
     "framer-motion": "^12.34.2",

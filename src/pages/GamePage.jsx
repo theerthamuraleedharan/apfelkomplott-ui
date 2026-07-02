@@ -31,6 +31,7 @@ import {
   mergeEventResults,
   setHelpModalPreference,
 } from "./gamePage/gamePageUtils";
+import { completeProductionCardPurchase } from "./gamePage/productionCardPurchase";
 import {
   isSoundEnabled as getSoundEnabledPreference,
   playCardReveal,
@@ -96,6 +97,9 @@ export default function GamePage({ onRestart }) {
   const [isWelcomeHelp, setIsWelcomeHelp] = useState(false);
   const [isInvestPromptOpen, setIsInvestPromptOpen] = useState(false);
   const [pendingInvestmentType, setPendingInvestmentType] = useState(null);
+  const [pendingProductionCardIds, setPendingProductionCardIds] = useState(
+    () => new Set()
+  );
   const [isEarlyFlowPromptOpen, setIsEarlyFlowPromptOpen] = useState(false);
   const [quietPhasePopup, setQuietPhasePopup] = useState(null);
   const hasCheckedWelcomeHelpRef = useRef(false);
@@ -104,6 +108,7 @@ export default function GamePage({ onRestart }) {
   const shownQuietPhasePopupsRef = useRef(new Set());
   const lastGameOverSoundRef = useRef("");
   const investmentRequestRef = useRef(false);
+  const pendingProductionCardIdsRef = useRef(new Set());
 
   /**
    * Shows a user-facing error modal and plays the matching feedback sound.
@@ -474,27 +479,25 @@ export default function GamePage({ onRestart }) {
    * @returns {Promise<void>} Resolves after purchase handling and refresh.
    */
   async function handleBuyProductionCard(cardId) {
+    if (!cardId || pendingProductionCardIdsRef.current.has(cardId)) return;
+
     const previousMode = gameState?.farmingMode ?? null;
+    const cardExists = market.some((card) => card?.id === cardId);
+    if (!cardExists) return;
 
-    // Preserve the slot position visually while the backend confirms the purchase.
-    setMarket((prev) => {
-      const idx = prev.findIndex((card) => card?.id === cardId);
-      if (idx === -1) return prev;
-
-      const copy = [...prev];
-      copy[idx] = null;
-      return copy;
-    });
+    pendingProductionCardIdsRef.current.add(cardId);
+    setPendingProductionCardIds(
+      new Set(pendingProductionCardIdsRef.current)
+    );
 
     try {
       playUiClick();
-      const result = await buyProductionCard(cardId);
-
-      if (result?.reasons?.length) {
-        showErrorPopup(result.reasons.join("\n"));
-      }
-
-      const updatedState = await refreshGame();
+      const updatedState = await completeProductionCardPurchase({
+        cardId,
+        buyCard: buyProductionCard,
+        refreshGame,
+        showEffects: setCardScoringPopup,
+      });
       playSuccess();
 
       if (
@@ -510,7 +513,11 @@ export default function GamePage({ onRestart }) {
     } catch (err) {
       // This is where backend validation like "max 8 plants" is surfaced to the player.
       showErrorPopup(err.message);
-      await refreshGame();
+    } finally {
+      pendingProductionCardIdsRef.current.delete(cardId);
+      setPendingProductionCardIds(
+        new Set(pendingProductionCardIdsRef.current)
+      );
     }
   }
 
@@ -639,6 +646,7 @@ export default function GamePage({ onRestart }) {
           shouldSpotlightNextMove={shouldSpotlightNextMove}
           onBuyInvestment={buy}
           pendingInvestmentType={pendingInvestmentType}
+          pendingProductionCardIds={pendingProductionCardIds}
           onBuyProductionCard={handleBuyProductionCard}
         />
 
