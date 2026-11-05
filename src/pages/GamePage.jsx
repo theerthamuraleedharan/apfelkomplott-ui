@@ -109,6 +109,7 @@ export default function GamePage({ onRestart }) {
   const lastGameOverSoundRef = useRef("");
   const investmentRequestRef = useRef(false);
   const pendingProductionCardIdsRef = useRef(new Set());
+  const deferInvestPromptRef = useRef(false);
 
   /**
    * Shows a user-facing error modal and plays the matching feedback sound.
@@ -376,6 +377,8 @@ export default function GamePage({ onRestart }) {
       return;
     }
 
+    if (deferInvestPromptRef.current) return;
+
     const investPromptKey = `${gameState.currentRound}-${gameState.currentPhase}`;
     if (lastInvestPromptRef.current === investPromptKey) return;
 
@@ -394,13 +397,36 @@ export default function GamePage({ onRestart }) {
    */
   async function handleNextPhase() {
     playUiClick();
-    const updated = await nextPhase();
+    let updated = await nextPhase();
+
+    // Intermediate scoring is resolved when that backend phase is completed.
+    // Complete it immediately so the score appears from the button that enters
+    // scoring, rather than requiring a second "Continue to Invest" click.
+    if (updated.currentPhase === "INTERMEDIATE_SCORING") {
+      updated = await nextPhase();
+    }
 
     if (updated.productionCardFinalScoreResult?.reasons?.length > 0) {
       setCardScoringPopup(updated.productionCardFinalScoreResult);
     }
 
     playPhaseAdvance();
+
+    if (updated.currentPhase === "INVEST") {
+      const investPromptKey = `${updated.currentRound}-${updated.currentPhase}`;
+      lastInvestPromptRef.current = investPromptKey;
+      const score = updated.lastScoreResult;
+      const hasScoreResult =
+        score &&
+        (score.economyChange !== 0 ||
+          score.environmentChange !== 0 ||
+          score.healthChange !== 0 ||
+          (score.reasons?.length ?? 0) > 0);
+
+      deferInvestPromptRef.current = Boolean(hasScoreResult);
+      setIsInvestPromptOpen(!hasScoreResult);
+    }
+
     setGameState(updated);
     const activeCards = await getActiveProductionCards();
     setActiveProductionCards(Array.isArray(activeCards) ? activeCards : []);
@@ -644,6 +670,12 @@ export default function GamePage({ onRestart }) {
           market={market}
           reduceMotion={reduceMotion}
           shouldSpotlightNextMove={shouldSpotlightNextMove}
+          onRoundScoreClose={() => {
+            if (!deferInvestPromptRef.current) return;
+
+            deferInvestPromptRef.current = false;
+            setIsInvestPromptOpen(true);
+          }}
           onBuyInvestment={buy}
           pendingInvestmentType={pendingInvestmentType}
           pendingProductionCardIds={pendingProductionCardIds}

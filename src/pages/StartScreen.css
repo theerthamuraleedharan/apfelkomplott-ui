@@ -99,11 +99,6 @@
   background: linear-gradient(135deg, var(--accent-dark), #bb5c31);
 }
 
-.start-screen__supporting {
-  color: var(--muted);
-  font-size: 0.96rem;
-}
-
 .start-screen__highlights {
   display: flex;
   gap: 14px;

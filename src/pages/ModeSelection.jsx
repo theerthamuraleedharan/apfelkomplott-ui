@@ -52,6 +52,7 @@ export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
     <div className="mode-page">
       <div className="mode-page__backdrop" />
 
+      {/* Keep the user informed while game creation is in progress. */}
       {isLoading && (
         <div className="mode-page__loadingOverlay" role="status" aria-live="polite">
           <div className="mode-page__loadingCard">
@@ -84,6 +85,7 @@ export default function ModeSelection({ onSelect, onBack, isLoading = false }) {
       </Motion.div>
 
       <div className="mode-grid">
+        {/* Render each farming strategy from the shared mode-card configuration. */}
         {modeCards.map((mode, index) => (
           <Motion.button
             key={mode.id}

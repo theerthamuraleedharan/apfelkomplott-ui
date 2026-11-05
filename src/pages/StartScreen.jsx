@@ -7,6 +7,11 @@ const highlights = [
   "Research-focused game prototype",
 ];
 
+const fadeUpAnimation = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
+
 /**
  * Landing screen for the Apfelkomplott prototype.
  *
@@ -34,8 +39,7 @@ export default function StartScreen({ onPlay }) {
 
         <Motion.h1
           className="start-screen__title"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...fadeUpAnimation}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
           Apfelkomplott
@@ -43,8 +47,7 @@ export default function StartScreen({ onPlay }) {
 
         <Motion.p
           className="start-screen__subtitle"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...fadeUpAnimation}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           An interactive orchard strategy experience exploring production,
@@ -53,16 +56,12 @@ export default function StartScreen({ onPlay }) {
 
         <Motion.div
           className="start-screen__actions"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...fadeUpAnimation}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
           <button className="start-screen__primary" onClick={onPlay}>
             Start Experience
           </button>
-          <div className="start-screen__supporting">
-            {/* Thesis presentation prototype for browser-based play */}
-          </div>
         </Motion.div>
 
         <Motion.div

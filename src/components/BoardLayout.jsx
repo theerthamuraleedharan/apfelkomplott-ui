@@ -50,6 +50,7 @@ function groupScoringReasons(reasons) {
 export default function BoardLayout({
   gameState,
   activeProductionCards,
+  onRoundScoreClose,
 }) {
   const [showSellPopup, setShowSellPopup] = useState(false);
   const [showScorePopup, setShowScorePopup] = useState(false);
@@ -66,6 +67,11 @@ export default function BoardLayout({
       ? scoringResult.wasteReason.trim()
       : "";
   const groupedReasons = groupScoringReasons(scoringResult?.reasons);
+
+  function closeScorePopup() {
+    setShowScorePopup(false);
+    onRoundScoreClose?.();
+  }
 
   useEffect(() => {
     const score = scoringResult;
@@ -183,7 +189,7 @@ export default function BoardLayout({
 
       <AnimatedModal
         isOpen={showScorePopup && Boolean(scoringResult)}
-        onClose={() => setShowScorePopup(false)}
+        onClose={closeScorePopup}
         backdropClassName="score-overlay"
         panelClassName="score-modal"
       >
@@ -282,7 +288,7 @@ export default function BoardLayout({
               </div>
             )}
 
-            <button className="score-modal__button" onClick={() => setShowScorePopup(false)}>
+            <button className="score-modal__button" onClick={closeScorePopup}>
               Continue
             </button>
           </>
