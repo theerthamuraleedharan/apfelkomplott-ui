@@ -1,11 +1,13 @@
 import { useState } from "react";
 import "./ActiveCardsPanel.css";
 
+// Support the alternate names and schedule shapes used by different card responses.
 function getCardTitle(card) {
   return card.name ?? card.cardName ?? card.title ?? card.cardId ?? "Production card";
 }
 
 function getCardKey(card, index) {
+  // Fall back to the title and position when the response has no identifier.
   return card.cardId ?? card.id ?? `${getCardTitle(card)}-${index}`;
 }
 
@@ -64,6 +66,8 @@ function getCompactYears(card) {
 }
 
 function getEffectGroups(card) {
+  // Prefer the card's direct effects; otherwise group effects by their
+  // alternate production configuration.
   if (Array.isArray(card.effects) && card.effects.length > 0) {
     return [{ title: null, effects: card.effects }];
   }
@@ -94,6 +98,7 @@ function formatDelta(value) {
 }
 
 function isCardStillActive(card, currentRound) {
+  // Use the most specific schedule data available to avoid showing expired cards.
   if (Array.isArray(card.remainingYears)) {
     return card.remainingYears.length > 0;
   }
@@ -131,6 +136,7 @@ export default function ActiveCardsPanel({
 }) {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
   const [expandedCardKey, setExpandedCardKey] = useState(null);
+  // Filter once so the count and the rendered list always describe the same cards.
   const visibleCards = activeCards.filter((card) =>
     isCardStillActive(card, currentRound)
   );
@@ -195,6 +201,7 @@ export default function ActiveCardsPanel({
  */
 function ActiveCardItem({ card, index, expandedCardKey, onToggle }) {
   const cardKey = getCardKey(card, index);
+  // Sharing one expanded key means opening a card closes any previously open card.
   const isExpanded = expandedCardKey === cardKey;
   const effectGroups = getEffectGroups(card);
 
